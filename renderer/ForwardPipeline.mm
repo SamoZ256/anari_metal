@@ -193,7 +193,6 @@ void ForwardPipeline::bind(id encoder, const ForwardPipelineConfig& config, bool
         auto& renderPipelineState = renderPipelineStates[hash];
         if (!renderPipelineState) {
             renderPipelineState = new PipelineState{};
-            printf("HAS TEX COORDS: %u\n", config.hasTexCoords);
 
             std::vector<ConstantValue> constantValues = {
                 {(void*)&config.hasColors, 0},

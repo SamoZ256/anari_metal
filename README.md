@@ -12,6 +12,7 @@ The project is currently in an early stage of development, and so there are some
 2. The frames's color and depth format is always RGBA8_sRGB and Depth32Float respectively
 3. Only directional light is supported
 4. Volumes aren't rendered
+5. Command buffers and encoders are created separatelly for every blit command, which is very inefficient
 
 ## Getting Started
 
