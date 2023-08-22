@@ -87,7 +87,7 @@ void DefaultRenderer::renderFrame(World* world, Camera* camera, id colorTexture,
     }
 
     for (auto& renderable : renderables) {
-        pipeline->bind(encoder, renderable.config, depthTexture);
+        pipeline->bind(encoder, renderable.config, colorTexture, depthTexture);
         renderable.object->render(encoder, renderable.modelMatrix);
     }
 

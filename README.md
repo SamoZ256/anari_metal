@@ -16,6 +16,7 @@ The project is currently in an early stage of development, and so there are some
 6. Loading models using anariViewer doesn't work, since anari_metal expects all images to be in the format RGBA8Unorm
 7. anariViewer renders only the upper right quarter of the example, most likely because of Retina screens
 8. All the images are rendered upside down, will be fixed soon
+9. The 'Matte' material is currently the same as PBM material
 
 ## Getting Started
 

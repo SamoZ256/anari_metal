@@ -48,7 +48,7 @@ void ImageSampler::initMTLTexture() {
 
         MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc] init];
         textureDescriptor.textureType = textureType;
-        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm_sRGB; //TODO: only use sRGB in case of albedo
+        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(array->getDataType());
         textureDescriptor.width = array->getDimensions().x;
         textureDescriptor.height = array->getDimensions().y;
         textureDescriptor.depth = array->getDimensions().z;

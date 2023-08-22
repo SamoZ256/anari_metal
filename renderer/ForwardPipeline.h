@@ -34,7 +34,7 @@ public:
 
     ~ForwardPipeline();
 
-    void bind(id encoder, const ForwardPipelineConfig& config, bool hasDepthAttachment);
+    void bind(id encoder, const ForwardPipelineConfig& config, id colorAttachment, id depthAttachment = nullptr);
 
     void unbind() {
         isBound = false;

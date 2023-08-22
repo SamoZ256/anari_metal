@@ -16,6 +16,8 @@ void copyTextureToBuffer(id<MTLCommandQueue> commandQueue, id<MTLTexture> source
 
 void copyBufferToTexture(id<MTLCommandQueue> commandQueue, id<MTLBuffer> source, id<MTLTexture> destination, uint3 size, size_t bytesPerPixel, size_t srcOffset);
 
+MTLPixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat = false);
+
 } //namespace helper
 
 } //namespace anari_mtl

@@ -34,6 +34,10 @@ void Frame::commit() {
         reportMessage(ANARI_SEVERITY_ERROR, "size of frame cannot be 0");
     colorFormat = getParam("channel.color", ANARI_UNKNOWN);
     depthFormat = getParam("channel.depth", ANARI_UNKNOWN);
+    if (depthFormat == ANARI_UNKNOWN) {
+        reportMessage(ANARI_SEVERITY_DEBUG, "depth format not set, using ANARI_FLOAT32");
+        depthFormat = ANARI_FLOAT32;
+    }
 }
 
 void Frame::renderFrame() {
@@ -47,12 +51,11 @@ void Frame::renderFrame() {
     textureDescriptor.storageMode = MTLStorageModePrivate;
     textureDescriptor.usage = MTLTextureUsageRenderTarget;
     if (colorFormat != ANARI_UNKNOWN && !mtlColorTexture) {
-        textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm_sRGB; //TODO: set according to parameters
+        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(colorFormat);
         mtlColorTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
     }
-    depthFormat = 1;
     if (depthFormat != ANARI_UNKNOWN && !mtlDepthTexture) {
-        textureDescriptor.pixelFormat = MTLPixelFormatDepth32Float; //TODO: set according to parameters
+        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(depthFormat, true);
         mtlDepthTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
     }
     renderer->renderFrame(world, camera, mtlColorTexture, mtlDepthTexture);

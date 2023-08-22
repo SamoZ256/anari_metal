@@ -187,7 +187,7 @@ ForwardPipeline::~ForwardPipeline() {
     }
 }
 
-void ForwardPipeline::bind(id encoder, const ForwardPipelineConfig& config, bool hasDepthAttachment) {
+void ForwardPipeline::bind(id encoder, const ForwardPipelineConfig& config, id colorAttachment, id depthAttachment) {
     FORWARD_PIPELINE_HASH_T hash = config.getHash();
     if (!(isBound && hash == boundHash)) {
         auto& renderPipelineState = renderPipelineStates[hash];
@@ -205,9 +205,9 @@ void ForwardPipeline::bind(id encoder, const ForwardPipelineConfig& config, bool
             renderPipelineDescriptor.vertexFunction = renderPipelineState->mainVertexFunction;
             renderPipelineDescriptor.fragmentFunction = renderPipelineState->mainFragmentFunction;
             renderPipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
-            renderPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm_sRGB; //TODO: set this according to frame format
-            if (hasDepthAttachment)
-                renderPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float; //TODO: do not hardcode this
+            renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
+            if (depthAttachment)
+                renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
             renderPipelineDescriptor.vertexDescriptor = (MTLVertexDescriptor*)mtlVertexDescriptor;
 
             NSError* error = nullptr;
