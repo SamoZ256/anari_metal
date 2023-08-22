@@ -12,11 +12,6 @@ Object::Object(ANARIDataType type, AnariMetalGlobalState *s)
     : helium::BaseObject(type, s)
 {}
 
-void Object::commit()
-{
-  // no-op
-}
-
 bool Object::getProperty(
     const std::string_view &name, ANARIDataType type, void *ptr, uint32_t flags)
 {

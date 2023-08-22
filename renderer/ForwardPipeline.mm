@@ -193,14 +193,14 @@ void ForwardPipeline::bind(id encoder, const ForwardPipelineConfig& config, bool
         auto& renderPipelineState = renderPipelineStates[hash];
         if (!renderPipelineState) {
             renderPipelineState = new PipelineState{};
+            printf("HAS TEX COORDS: %u\n", config.hasTexCoords);
 
-            std::vector<ConstantValue> vertexConstantValues = {
+            std::vector<ConstantValue> constantValues = {
                 {(void*)&config.hasColors, 0},
                 {(void*)&config.hasTexCoords, 1}
             };
-            renderPipelineState->mainVertexFunction = createFunction("vertexMain", vertexConstantValues);
-            std::vector<ConstantValue> fragmentConstantValues = {};
-            renderPipelineState->mainFragmentFunction = createFunction("fragmentMain", fragmentConstantValues);
+            renderPipelineState->mainVertexFunction = createFunction("vertexMain", constantValues);
+            renderPipelineState->mainFragmentFunction = createFunction("fragmentMain", constantValues);
 
             MTLRenderPipelineDescriptor* renderPipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
             renderPipelineDescriptor.vertexFunction = renderPipelineState->mainVertexFunction;

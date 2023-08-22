@@ -36,7 +36,7 @@ struct Object : public helium::BaseObject {
         void *ptr,
         uint32_t flags);
 
-    virtual void commit();
+    virtual void commit() {}
 
     virtual bool isValid() const;
 
