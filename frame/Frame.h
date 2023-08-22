@@ -32,9 +32,12 @@ public:
     void unmap(std::string_view channel) override;
 
     int frameReady(ANARIWaitMask m) override {
-        //TODO
-
-        return 0;
+        if (m == ANARI_NO_WAIT)
+            return renderer->ready();
+        else {
+            renderer->wait();
+            return 1;
+        }
     }
 
     void discard() override {

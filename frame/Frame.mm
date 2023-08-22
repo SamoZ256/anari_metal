@@ -11,6 +11,8 @@ Frame::Frame(AnariMetalGlobalState* s) : helium::BaseFrame(s), state(s) {
 Frame::~Frame() {
     deviceState()->objectCounts.frames--;
 
+    if (mtlMappedBuffer)
+        [mtlMappedBuffer release];
     if (mtlColorTexture)
         [mtlColorTexture release];
     if (mtlDepthTexture)
@@ -57,6 +59,10 @@ void Frame::renderFrame() {
 }
 
 void* Frame::map(std::string_view channel, uint32_t *width, uint32_t *height, ANARIDataType *pixelType) {
+    if (mtlMappedBuffer) {
+        reportMessage(ANARI_SEVERITY_WARNING, "frame already mapped, did you forget to call unmap?");
+        unmap(channel);
+    }
     id<MTLTexture> textureToMap;
     if (channel == "channel.color") {
         if (!mtlColorTexture) {

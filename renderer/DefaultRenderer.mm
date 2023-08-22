@@ -7,6 +7,8 @@ DefaultRenderer::~DefaultRenderer() {
         delete pipeline;
     if (mainDepthStencilState)
         [mainDepthStencilState release];
+    if (commandBuffer)
+        [commandBuffer release];
 }
 
 void DefaultRenderer::commit() {
@@ -14,7 +16,9 @@ void DefaultRenderer::commit() {
 }
 
 void DefaultRenderer::renderFrame(World* world, Camera* camera, id colorTexture, id depthTexture) {
-    id<MTLCommandBuffer> commandBuffer = [deviceState()->mtlCommandQueue commandBuffer];
+    if (commandBuffer)
+        [commandBuffer release];
+    commandBuffer = [deviceState()->mtlCommandQueue commandBuffer];
 
     if (!pipeline)
         pipeline = new ForwardPipeline(deviceState()->mtlDevice);
@@ -93,7 +97,22 @@ void DefaultRenderer::renderFrame(World* world, Camera* camera, id colorTexture,
     [commandBuffer commit];
 
     [encoder release];
-    [commandBuffer release];
+}
+
+bool DefaultRenderer::ready() {
+    if (!commandBuffer) {
+        reportMessage(ANARI_SEVERITY_WARNING, "renderer that hasn't rendered yet is always ready");
+        return true;
+    }
+    return ([commandBuffer status] == MTLCommandBufferStatusCompleted);
+}
+
+void DefaultRenderer::wait() {
+    if (!commandBuffer) {
+        reportMessage(ANARI_SEVERITY_WARNING, "cannot wait on a renderer that has not rendered anything yet");
+        return;
+    }
+    [commandBuffer waitUntilCompleted];
 }
 
 } //namespace anari_mtl

@@ -17,6 +17,10 @@ public:
 
     virtual void renderFrame(World* world, Camera* camera, id colorTexture = nullptr, id depthTexture = nullptr) = 0;
 
+    virtual bool ready() = 0;
+
+    virtual void wait() = 0;
+
 protected:
     float4 clearColor; //TODO: make a union from this to support other types
 
