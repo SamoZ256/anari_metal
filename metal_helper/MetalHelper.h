@@ -16,7 +16,13 @@ void copyTextureToBuffer(id<MTLCommandQueue> commandQueue, id<MTLTexture> source
 
 void copyBufferToTexture(id<MTLCommandQueue> commandQueue, id<MTLBuffer> source, id<MTLTexture> destination, uint3 size, size_t bytesPerPixel, size_t srcOffset);
 
-MTLPixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat = false);
+struct PixelFormat {
+    MTLPixelFormat mtlPixelFormat;
+    bool sizeChanged = false;
+    bool channelCountChangedTo4 = false;
+};
+
+PixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat = false, bool allowSizeChange = false, bool allowChannelCountChange = false);
 
 } //namespace helper
 

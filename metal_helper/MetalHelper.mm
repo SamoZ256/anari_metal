@@ -46,166 +46,449 @@ void copyBufferToTexture(id<MTLCommandQueue> commandQueue, id<MTLBuffer> source,
     [commandBuffer release];
 }
 
-MTLPixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat) {
+PixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat, bool allowSizeChange, bool allowChannelCountChange) {
+    PixelFormat pixelFormat;
     if (depthFormat) {
         switch (dataType) {
         //TODO: check which one of these 2 sould be used
         case ANARI_UFIXED16:
         case ANARI_FLOAT16:
-            return MTLPixelFormatDepth16Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatDepth16Unorm;
+            break;
         case ANARI_FLOAT32:
-            return MTLPixelFormatDepth32Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatDepth32Float;
+            break;
         default:
-            return MTLPixelFormatInvalid;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         }
     } else {
         switch (dataType) {
         //Integer formats
         case ANARI_INT8:
-            return MTLPixelFormatR8Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR8Sint;
+            break;
         case ANARI_INT8_VEC2:
-            return MTLPixelFormatRG8Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG8Sint;
+            break;
         case ANARI_INT8_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Sint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT8_VEC4:
-            return MTLPixelFormatRGBA8Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Sint;
+            break;
         case ANARI_UINT8:
-            return MTLPixelFormatR8Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR8Uint;
+            break;
         case ANARI_UINT8_VEC2:
-            return MTLPixelFormatRG8Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG8Uint;
+            break;
         case ANARI_UINT8_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Uint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT8_VEC4:
-            return MTLPixelFormatRGBA8Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Uint;
+            break;
         case ANARI_INT16:
-            return MTLPixelFormatR16Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR16Sint;
+            break;
         case ANARI_INT16_VEC2:
-            return MTLPixelFormatRG16Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Sint;
+            break;
         case ANARI_INT16_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Sint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT16_VEC4:
-            return MTLPixelFormatRGBA16Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Sint;
+            break;
         case ANARI_UINT16:
-            return MTLPixelFormatR16Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR16Uint;
+            break;
         case ANARI_UINT16_VEC2:
-            return MTLPixelFormatRG16Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Uint;
+            break;
         case ANARI_UINT16_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Uint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT16_VEC4:
-            return MTLPixelFormatRGBA16Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Uint;
+            break;
         case ANARI_INT32:
-            return MTLPixelFormatR32Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR32Sint;
+            break;
         case ANARI_INT32_VEC2:
-            return MTLPixelFormatRG32Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Sint;
+            break;
         case ANARI_INT32_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Sint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT32_VEC4:
-            return MTLPixelFormatRGBA32Sint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Sint;
+            break;
         case ANARI_UINT32:
-            return MTLPixelFormatR32Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR32Uint;
+            break;
         case ANARI_UINT32_VEC2:
-            return MTLPixelFormatRG32Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Uint;
+            break;
         case ANARI_UINT32_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Uint;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT32_VEC4:
-            return MTLPixelFormatRGBA32Uint;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Uint;
+            break;
         case ANARI_INT64:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR32Sint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT64_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Sint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT64_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Sint;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_INT64_VEC4:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Sint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT64:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR32Uint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT64_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Uint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT64_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Uint;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UINT64_VEC4:
-            return MTLPixelFormatInvalid;
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Uint;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
 
         //Normalized formats
         case ANARI_FIXED8:
-            return MTLPixelFormatR8Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR8Snorm;
+            break;
         case ANARI_FIXED8_VEC2:
-            return MTLPixelFormatRG8Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG8Snorm;
+            break;
         case ANARI_FIXED8_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Snorm;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED8_VEC4:
-            return MTLPixelFormatRGBA8Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Snorm;
+            break;
         case ANARI_UFIXED8:
-            return MTLPixelFormatR8Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR8Unorm;
+            break;
         case ANARI_UFIXED8_VEC2:
-            return MTLPixelFormatRG8Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG8Unorm;
+            break;
         case ANARI_UFIXED8_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Unorm;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED8_VEC4:
-            return MTLPixelFormatRGBA8Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Unorm;
+            break;
         case ANARI_FIXED16:
-            return MTLPixelFormatR16Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR16Snorm;
+            break;
         case ANARI_FIXED16_VEC2:
-            return MTLPixelFormatRG16Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Snorm;
+            break;
         case ANARI_FIXED16_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED16_VEC4:
-            return MTLPixelFormatRGBA16Snorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+            break;
         case ANARI_UFIXED16:
-            return MTLPixelFormatR16Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR16Unorm;
+            break;
         case ANARI_UFIXED16_VEC2:
-            return MTLPixelFormatRG16Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Unorm;
+            break;
         case ANARI_UFIXED16_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED16_VEC4:
-            return MTLPixelFormatRGBA16Unorm;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+            break;
         case ANARI_FIXED32:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED32_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED32_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED32_VEC4:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED32:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED32_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED32_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED32_VEC4:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED64:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED64_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED64_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FIXED64_VEC4:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Snorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED64:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED64_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED64_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED64_VEC4:
-            return MTLPixelFormatInvalid;
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Unorm;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         
         //Floating-point formats
         case ANARI_FLOAT16:
-            return MTLPixelFormatR16Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR16Float;
+            break;
         case ANARI_FLOAT16_VEC2:
-            return MTLPixelFormatRG16Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG16Float;
+            break;
         case ANARI_FLOAT16_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Float;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FLOAT16_VEC4:
-            return MTLPixelFormatRGBA16Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA16Float;
+            break;
         case ANARI_FLOAT32:
-            return MTLPixelFormatR32Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR32Float;
+            break;
         case ANARI_FLOAT32_VEC2:
-            return MTLPixelFormatRG32Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Float;
+            break;
         case ANARI_FLOAT32_VEC3:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Float;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FLOAT32_VEC4:
-            return MTLPixelFormatRGBA32Float;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Float;
+            break;
         case ANARI_FLOAT64:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatR32Float;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FLOAT64_VEC2:
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRG32Float;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FLOAT64_VEC3:
+            if (allowSizeChange && allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Float;
+                pixelFormat.sizeChanged = true;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_FLOAT64_VEC4:
-            return MTLPixelFormatInvalid;
+            if (allowSizeChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA32Float;
+                pixelFormat.sizeChanged = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         
         //Fixed sRGB formats
         case ANARI_UFIXED8_RGBA_SRGB:
-            return MTLPixelFormatRGBA8Unorm_sRGB;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Unorm_sRGB;
+            break;
         case ANARI_UFIXED8_RGB_SRGB:
-            return MTLPixelFormatInvalid;
+            if (allowChannelCountChange) {
+                pixelFormat.mtlPixelFormat = MTLPixelFormatRGBA8Unorm_sRGB;
+                pixelFormat.channelCountChangedTo4 = true;
+            } else
+                pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED8_RA_SRGB:
-            return MTLPixelFormatInvalid;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         case ANARI_UFIXED8_R_SRGB:
-            return MTLPixelFormatR8Unorm_sRGB;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatR8Unorm_sRGB;
+            break;
         default:
-            return MTLPixelFormatInvalid;
+            pixelFormat.mtlPixelFormat = MTLPixelFormatInvalid;
+            break;
         }
     }
+
+    return pixelFormat;
 }
 
 } //namespace helper

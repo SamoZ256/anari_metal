@@ -51,11 +51,21 @@ void Frame::renderFrame() {
     textureDescriptor.storageMode = MTLStorageModePrivate;
     textureDescriptor.usage = MTLTextureUsageRenderTarget;
     if (colorFormat != ANARI_UNKNOWN && !mtlColorTexture) {
-        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(colorFormat);
+        helper::PixelFormat pixelFormat = helper::getMTLPixelFormatFromANARIDataType(colorFormat, false, true, true);
+        if (pixelFormat.sizeChanged)
+            reportMessage(ANARI_SEVERITY_DEBUG, "Changed frame's color format size");
+        if (pixelFormat.channelCountChangedTo4)
+            reportMessage(ANARI_SEVERITY_DEBUG, "Changed frame's color format channel count from 3 ot 4");
+        textureDescriptor.pixelFormat = pixelFormat.mtlPixelFormat;
         mtlColorTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
     }
     if (depthFormat != ANARI_UNKNOWN && !mtlDepthTexture) {
-        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(depthFormat, true);
+        helper::PixelFormat pixelFormat = helper::getMTLPixelFormatFromANARIDataType(depthFormat, true, true, true);
+        if (pixelFormat.sizeChanged)
+            reportMessage(ANARI_SEVERITY_DEBUG, "Changed frame's color format size");
+        if (pixelFormat.channelCountChangedTo4)
+            reportMessage(ANARI_SEVERITY_DEBUG, "Changed frame's color format channel count from 3 ot 4");
+        textureDescriptor.pixelFormat = pixelFormat.mtlPixelFormat;
         mtlDepthTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
     }
     renderer->renderFrame(world, camera, mtlColorTexture, mtlDepthTexture);

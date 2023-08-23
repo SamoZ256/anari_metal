@@ -31,6 +31,9 @@ void ImageSampler::initMTLTexture() {
     //TODO: release and set to nullptr if changed
 
     if (!mtlTexture) {
+        helper::PixelFormat pixelFormat = helper::getMTLPixelFormatFromANARIDataType(array->getDataType(), false, false, true);
+        //TODO: transform the data if channel count changed to 4
+
         id<MTLBuffer> buffer = [deviceState()->mtlDevice newBufferWithBytes:array->getData() length:array->getSize() options:MTLResourceStorageModeShared];
 
         MTLTextureType textureType;
@@ -48,7 +51,7 @@ void ImageSampler::initMTLTexture() {
 
         MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc] init];
         textureDescriptor.textureType = textureType;
-        textureDescriptor.pixelFormat = helper::getMTLPixelFormatFromANARIDataType(array->getDataType());
+        textureDescriptor.pixelFormat = pixelFormat.mtlPixelFormat;
         textureDescriptor.width = array->getDimensions().x;
         textureDescriptor.height = array->getDimensions().y;
         textureDescriptor.depth = array->getDimensions().z;

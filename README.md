@@ -13,9 +13,9 @@ The project is currently in an early stage of development, and so there are some
 3. Only directional light is supported
 4. Volumes aren't rendered
 5. Command buffers and encoders are created separatelly for every blit command, which is very inefficient
-6. Loading RGB images does not work, since Metal does only support formats with 2^ bit count
+6. Loading RGB images are treated as RGBA, which messes up the data (will be fixed soon)
 7. anariViewer renders only the upper right quarter of the example, most likely because of Retina screens
-8. All the images are rendered upside down, will be fixed soon
+8. All the images are rendered upside down (will be fixed soon)
 9. The 'Matte' material is currently the same as PBM material
 
 ## Getting Started
