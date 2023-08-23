@@ -6,7 +6,7 @@ This is an [Anari](https://github.com/KhronosGroup/ANARI-SDK) device implementat
 
 ### Limitations
 
-The project is currently in an early stage of development, and so there are some limitations to it.
+The project is currently in an early stage of development, and there are some limitations to it.
 
 1. Only triangle geometry is supported
 2. The frames's color and depth format is always RGBA8_sRGB and Depth32Float respectively
@@ -17,6 +17,7 @@ The project is currently in an early stage of development, and so there are some
 7. anariViewer renders only the upper right quarter of the example, most likely because of Retina screens
 8. All the images are rendered upside down (will be fixed soon)
 9. The 'Matte' material is currently the same as PBM material
+10. Some primitive attributes don't work, like primitive.color and primitive.attributeXX
 
 ## Getting Started
 
