@@ -16,7 +16,7 @@ Material::~Material() {
 Material* Material::createInstance(std::string_view type, AnariMetalGlobalState* s) {
     if (type == "matte")
         return new Matte(s);
-    else if (type == "PBM")
+    else if (type == "physicallyBased")
         return new PBM(s);
     else
         return (Material*)new UnknownObject(ANARI_MATERIAL, s);

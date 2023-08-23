@@ -43,15 +43,15 @@ struct Object : public helium::BaseObject {
     AnariMetalGlobalState *deviceState() const;
 
     virtual void render(id encoder, const float4x4& modelMatrix) {
-        reportMessage(ANARI_SEVERITY_ERROR, "this object (%p, %u) is not renderable", this, type());
+        reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) is not renderable", this, type());
     }
 
     virtual void getRenderables(std::vector<Renderable>& renderables, const float4x4& parentModelMatrix) {
-        reportMessage(ANARI_SEVERITY_ERROR, "this object (%p, %u) is not renderable or renderable list", this, type());
+        reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) is not renderable or renderable list", this, type());
     }
 
     virtual Bounds getBounds(const float4x4& parentModelMatrix) {
-        reportMessage(ANARI_SEVERITY_ERROR, "this object (%p, %u) does not have bounds", this, type());
+        reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) does not have bounds", this, type());
 
         return {};
     }
