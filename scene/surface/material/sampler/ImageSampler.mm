@@ -32,9 +32,26 @@ void ImageSampler::initMTLTexture() {
 
     if (!mtlTexture) {
         helper::PixelFormat pixelFormat = helper::getMTLPixelFormatFromANARIDataType(array->getDataType(), false, false, true);
-        //TODO: transform the data if channel count changed to 4
+        void* data;
+        size_t bytesPerPixel;
+        size_t size;
+        if (pixelFormat.channelCountChangedTo4) {
+            reportMessage(ANARI_SEVERITY_DEBUG, "Image sampler has an RGB data type, translating to RGBA");
+            size_t elementComponentSize = anari::sizeOf(array->getDataType()) / 3;
+            bytesPerPixel = elementComponentSize * 4;
+            size = array->getElementCount() * bytesPerPixel;
+            data = malloc(size);
+            for (uint32_t i = 0; i < array->getElementCount(); i++) {
+                memcpy((char*)data + i * bytesPerPixel, array->getAtIndex(i), anari::sizeOf(array->getDataType()));
+                *(float*)((char*)data + i * bytesPerPixel + 3 * elementComponentSize) = 1.0f;
+            }
+        } else {
+            data = const_cast<void*>(array->getData());
+            bytesPerPixel = anari::sizeOf(array->getDataType());
+            size = array->getSize();
+        }
 
-        id<MTLBuffer> buffer = [deviceState()->mtlDevice newBufferWithBytes:array->getData() length:array->getSize() options:MTLResourceStorageModeShared];
+        id<MTLBuffer> buffer = [deviceState()->mtlDevice newBufferWithBytes:data length:size options:MTLResourceStorageModeShared];
 
         MTLTextureType textureType;
         switch (imageType) {
@@ -60,7 +77,7 @@ void ImageSampler::initMTLTexture() {
 
         mtlTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
 
-        helper::copyBufferToTexture(deviceState()->mtlCommandQueue, buffer, mtlTexture, array->getDimensions(), anari::sizeOf(array->getDataType()), 0); //TODO: bytesPerPixel
+        helper::copyBufferToTexture(deviceState()->mtlCommandQueue, buffer, mtlTexture, array->getDimensions(), bytesPerPixel, 0); //TODO: bytesPerPixel
     }
 }
 

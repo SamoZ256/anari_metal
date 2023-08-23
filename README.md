@@ -13,7 +13,7 @@ The project is currently in an early stage of development, and there are some li
 3. Only directional light is supported
 4. Volumes aren't rendered
 5. Command buffers and encoders are created separatelly for every blit command, which is very inefficient
-6. Loading RGB images are treated as RGBA, which messes up the data (will be fixed soon)
+6. anariViewer does not render models, though models can be loaded using the file/obj scene and work just fine
 7. anariViewer renders only the upper right quarter of the example, most likely because of Retina screens
 8. All the images are rendered upside down (will be fixed soon)
 9. The 'Matte' material is currently the same as PBM material

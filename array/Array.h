@@ -41,6 +41,10 @@ public:
         return /*(char*)*/data;// + begin;
     }
 
+    void* getAtIndex(uint32_t index) {
+        return (char*)getData() + index * anari::sizeOf(dataType);
+    }
+
     template<typename T>
     T getAtIndexAs(uint32_t index) {
         return ((T*)getData())[index];
