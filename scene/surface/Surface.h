@@ -17,7 +17,7 @@ public:
 
     void commit() override;
 
-    void render(id encoder, const float4x4& modelMatrix) override;
+    void render(id encoder, const float4x4& modelMatrix, bool useMaterial = true) override;
 
     void getRenderables(std::vector<Renderable>& renderables, const float4x4& parentModelMatrix) override;
 

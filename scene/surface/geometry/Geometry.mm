@@ -56,7 +56,7 @@ void Geometry::initMTLBuffers() {
     }
 }
 
-void Geometry::render(id encoder, const float4x4& modelMatrix) {
+void Geometry::render(id encoder, const float4x4& modelMatrix, bool useMaterial) {
     [encoder setVertexBytes:&modelMatrix length:sizeof(float4x4) atIndex:1];
     [encoder setVertexBuffer:POSITION_BUFFER offset:0 atIndex:BUFFER_BINDING_INDEX(POSITION_I)];
     if (ATTRIBUTE_ATTR(0))

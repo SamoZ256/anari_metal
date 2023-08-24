@@ -5,8 +5,8 @@
 namespace anari_mtl {
 
 struct PipelineState {
-    id mainVertexFunction;
-    id mainFragmentFunction;
+    id vertexFunction;
+    id fragmentFunction;
     id pipelineState;
 };
 
@@ -18,14 +18,15 @@ struct ConstantValue {
 
 /*
  * RULES:
- * 1. Material must always be at buffer index 2
+ * 1. Light must always be at buffer index 1
+ * 2. Material must always be at buffer index 2
  */
 
 class Pipeline {
 public:
     Pipeline(id aDevice, const char* shaderSource);
 
-    ~Pipeline();
+    virtual ~Pipeline();
 
     void bind(id encoder, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture);
 

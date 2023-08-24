@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 #include "DefaultRenderer.h"
+#include "HybridRenderer.h"
 
 namespace anari_mtl {
 
@@ -15,6 +16,8 @@ Renderer::~Renderer() {
 Renderer* Renderer::createInstance(std::string_view type, AnariMetalGlobalState* s) {
     if (type == "default")
         return new DefaultRenderer(s);
+    else if (type == "hybrid")
+        return new HybridRenderer(s);
     else
         return (Renderer*)new UnknownObject(ANARI_RENDERER, s);
 }

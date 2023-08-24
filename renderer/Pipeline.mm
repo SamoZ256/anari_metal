@@ -45,8 +45,8 @@ Pipeline::Pipeline(id aDevice, const char* shaderSource) : device(aDevice) {
 Pipeline::~Pipeline() {
     for (PIPELINE_HASH_T i = 0; i < PIPELINE_CONFIG_COUNT; i++) {
         if (renderPipelineStates[i]) {
-            [renderPipelineStates[i]->mainVertexFunction release];
-            [renderPipelineStates[i]->mainFragmentFunction release];
+            [renderPipelineStates[i]->vertexFunction release];
+            [renderPipelineStates[i]->fragmentFunction release];
             [renderPipelineStates[i]->pipelineState release];
         }
     }

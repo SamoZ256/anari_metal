@@ -79,8 +79,10 @@ add_library(anari_library_anari_metal SHARED
   frame/Frame.mm
   renderer/Renderer.mm
   renderer/DefaultRenderer.mm
+  renderer/HybridRenderer.mm
   renderer/Pipeline.mm
   renderer/ForwardPipeline.mm
+  renderer/HybridPipeline.mm
 )
 
 include(GenerateExportHeader)

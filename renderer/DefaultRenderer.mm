@@ -36,12 +36,12 @@ void DefaultRenderer::renderFrame(World* world, Camera* camera, id colorTexture,
         renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
         renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        if (depthTexture) {
-            renderPassDescriptor.depthAttachment.texture = depthTexture;
-            renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-            renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
-            renderPassDescriptor.depthAttachment.clearDepth = 1.0f;
-        }
+    }
+    if (depthTexture) {
+        renderPassDescriptor.depthAttachment.texture = depthTexture;
+        renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
+        renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
+        renderPassDescriptor.depthAttachment.clearDepth = 1.0f;
     }
 
     id<MTLRenderCommandEncoder> encoder = [commandBuffer renderCommandEncoderWithDescriptor:(MTLRenderPassDescriptor*)renderPassDescriptor];

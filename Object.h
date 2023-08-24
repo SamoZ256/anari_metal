@@ -53,7 +53,7 @@ struct Object : public helium::BaseObject {
 
     AnariMetalGlobalState *deviceState() const;
 
-    virtual void render(id encoder, const float4x4& modelMatrix) {
+    virtual void render(id encoder, const float4x4& modelMatrix, bool useMaterial = true) {
         reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) is not renderable", this, type());
     }
 

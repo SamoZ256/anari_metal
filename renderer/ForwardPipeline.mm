@@ -147,12 +147,12 @@ void ForwardPipeline::createPipeline(PipelineState* renderPipelineState, const P
         {(void*)&config.hasColors, 0},
         {(void*)&config.hasTexCoords, 1}
     };
-    renderPipelineState->mainVertexFunction = createFunction("vertexMain", constantValues);
-    renderPipelineState->mainFragmentFunction = createFunction("fragmentMain", constantValues);
+    renderPipelineState->vertexFunction = createFunction("vertexMain", constantValues);
+    renderPipelineState->fragmentFunction = createFunction("fragmentMain", constantValues);
 
     MTLRenderPipelineDescriptor* renderPipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
-    renderPipelineDescriptor.vertexFunction = renderPipelineState->mainVertexFunction;
-    renderPipelineDescriptor.fragmentFunction = renderPipelineState->mainFragmentFunction;
+    renderPipelineDescriptor.vertexFunction = renderPipelineState->vertexFunction;
+    renderPipelineDescriptor.fragmentFunction = renderPipelineState->fragmentFunction;
     renderPipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
     renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
     if (depthAttachment)

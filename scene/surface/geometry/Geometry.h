@@ -30,13 +30,6 @@
 namespace anari_mtl {
 
 class Geometry : public Object {
-protected:
-    Array* attributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
-    Array* oldAttributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
-    id mtlBuffers[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
-
-    void initMTLBuffers();
-
 public:
     Geometry(AnariMetalGlobalState* s);
 
@@ -46,7 +39,7 @@ public:
 
     void commit() override;
 
-    void render(id encoder, const float4x4& modelMatrix) override;
+    void render(id encoder, const float4x4& modelMatrix, bool useMaterial = true) override;
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
@@ -58,6 +51,13 @@ public:
     bool hasTexCoords() {
         return ATTRIBUTE_ATTR(0);
     }
+
+protected:
+    Array* attributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
+    Array* oldAttributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
+    id mtlBuffers[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
+
+    void initMTLBuffers();
 };
 
 } //namespace anari_mtl

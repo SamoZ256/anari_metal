@@ -21,8 +21,9 @@ void Surface::commit() {
         reportMessage(ANARI_SEVERITY_WARNING, "missing 'geometry' on ANARISurface");
 }
 
-void Surface::render(id encoder, const float4x4& modelMatrix) {
-    material->uploadToShader(encoder);
+void Surface::render(id encoder, const float4x4& modelMatrix, bool useMaterial) {
+    if (useMaterial)
+        material->uploadToShader(encoder);
     geometry->render(encoder, modelMatrix);
 }
 

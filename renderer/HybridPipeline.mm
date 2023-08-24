@@ -1,14 +1,11 @@
-#include "ForwardPipeline.h"
+#include "HybridPipeline.h"
 
 //TODO: replace this include?
 #include "../scene/World.h"
 
-const char* shaderSource = R"V0G0N(
+const char* gbufferShaderSource = R"V0G0N(
 #include <metal_stdlib>
 using namespace metal;
-
-//Constants
-constant float PI = 3.14159265359;
 
 //Function constants
 constant bool hasColors [[function_constant(0)]];
@@ -44,8 +41,14 @@ vertex VertexOut vertexMain(VertexIn in [[stage_in]],
 }
 
 struct FragmentOut {
-    float4 albedoMetallic [[color(0)]];
-    float4 normalRoughness [[color(1)]];
+    float4 albedoMetallic [[color(1)]];
+    float4 normalRoughness [[color(2)]];
+};
+
+struct Material {
+    float4 albedo;
+    float metallic;
+    float roughness;
 };
 
 fragment FragmentOut fragmentMain(VertexOut in [[stage_in]],
@@ -73,19 +76,24 @@ const char* deferredShaderSource = R"V0G0N(
 #include <metal_stdlib>
 using namespace metal;
 
+//Constants
+constant float PI = 3.14159265359;
+
 struct VertexOut {
     float4 position [[position]];
     half2 texCoord;
 };
 
-half2 triangleTexCoords[] = {
-    //TODO: put the fullscreen triangle coords here
+constant half2 triangleTexCoords[] = {
+    half2( 0.0,  1.0),
+    half2( 0.0, -1.0),
+    half2( 2.0,  1.0)
 };
 
 vertex VertexOut vertexTriangle(uint vid [[vertex_id]]) {
     VertexOut out;
     out.texCoord = triangleTexCoords[vid];
-    out.position = out.texCoord * 2.0 - 1.0;
+    out.position = float4(float2(out.texCoord * 2.0 - 1.0), 1.0, 1.0);
     out.position.y = -out.position.y;
 
     return out;
@@ -94,12 +102,6 @@ vertex VertexOut vertexTriangle(uint vid [[vertex_id]]) {
 struct Light {
     packed_float3 color;
     packed_float3 direction;
-};
-
-struct Material {
-    float4 albedo;
-    float metallic;
-    float roughness;
 };
 
 //PBR functions
@@ -167,43 +169,44 @@ float3 calculateDirectionalLightingForPBM(constant Light& light, float3 viewDir,
 }
 
 fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
-                                uint2 coord [[position]],
+                                float4 albedoMetallic [[color(1)]],
+                                float4 normalRoughness [[color(2)]],
                                 constant float3& viewPos [[buffer(0)]],
                                 constant Light& light [[buffer(1)]],
-                                constant float4x4& invViewProj [[buffer(2)]],
-                                texture2d<float> albedoMetallicTexture [[texture(0)]],
-                                texture2d<float> normalRoughnessTexture [[texture(1)]],
-                                texture2d<float> depthTexture [[texture(2)]]) {
-    float4 worldPosition = invViewProj * float4(in.position, depthTexture.read(uint2(coord)), 1.0);
+                                constant float4x4& invViewProj [[buffer(2)]]/*,
+                                texture2d<float> depthTexture [[texture(2)]]*/) {
+    float4 worldPosition = float4(1.0);//invViewProj * float4(in.position, depthTexture.read(uint2(coord)), 1.0);
     float3 viewDir = normalize(viewPos - worldPosition.xyz);
-
-    float4 albedoMetallic = albedoMetallicTexture.read(uint2(coord));
-    float4 normalRoughness = normalRoughnessTexture.read(uint2(coord));
 
     float3 F0 = mix(float3(0.04), albedoMetallic.rgb, albedoMetallic.a);
 
-    return float4(albedoMetallic.rgb * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedoMetallic.rgb, normalRoughness.xyz, F0, normalRoughness.roughness), 1.0);
+    return float4(albedoMetallic.rgb * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedoMetallic.rgb, normalRoughness.xyz, F0, normalRoughness.a), 1.0);
 }
 )V0G0N";
 
 namespace anari_mtl {
 
-HybridPipeline::HybridPipeline(id aDevice) : Pipeline(aDevice, shaderSource) {}
+HybridPipeline::HybridPipeline(id aDevice) : Pipeline(aDevice, gbufferShaderSource) {}
 
-void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) {
+HybridPipeline::~HybridPipeline() {
+    //TODO: release all the objects
+}
+
+void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment) {
     std::vector<ConstantValue> constantValues = {
         {(void*)&config.hasColors, 0},
         {(void*)&config.hasTexCoords, 1}
     };
-    renderPipelineState->mainVertexFunction = createFunction("vertexMain", constantValues);
-    renderPipelineState->mainFragmentFunction = createFunction("fragmentMain", constantValues);
+    renderPipelineState->vertexFunction = createFunction("vertexMain", constantValues);
+    renderPipelineState->fragmentFunction = createFunction("fragmentMain", constantValues);
 
     MTLRenderPipelineDescriptor* renderPipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
-    renderPipelineDescriptor.vertexFunction = renderPipelineState->mainVertexFunction;
-    renderPipelineDescriptor.fragmentFunction = renderPipelineState->mainFragmentFunction;
+    renderPipelineDescriptor.vertexFunction = renderPipelineState->vertexFunction;
+    renderPipelineDescriptor.fragmentFunction = renderPipelineState->fragmentFunction;
     renderPipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
-    renderPipelineDescriptor.colorAttachments[0].pixelFormat = [albedoMetallicTexture pixelFormat];
-    renderPipelineDescriptor.colorAttachments[1].pixelFormat = [normalRoughnessTexture pixelFormat];
+    renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
+    renderPipelineDescriptor.colorAttachments[1].pixelFormat = [albedoMetallicAttachment pixelFormat];
+    renderPipelineDescriptor.colorAttachments[2].pixelFormat = [normalRoughnessAttachment pixelFormat];
     if (depthAttachment)
         renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
     renderPipelineDescriptor.vertexDescriptor = (MTLVertexDescriptor*)mtlVertexDescriptor;
@@ -212,6 +215,48 @@ void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const Pi
     renderPipelineState->pipelineState = [device newRenderPipelineStateWithDescriptor:renderPipelineDescriptor error:&error];
     if (!renderPipelineState->pipelineState)
         printf("[error] failed to create MTLRenderPipelineState, reason: %s\n", [[error localizedDescription] UTF8String]);
+}
+
+void HybridPipeline::bindDeferred(id encoder, id colorAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAttachment) {
+    if (!deferredPipelineState) {
+        deferredPipelineState = new PipelineState{};
+
+        NSError* error = nullptr;
+        deferredLibrary = [device newLibraryWithSource:[NSString stringWithCString:deferredShaderSource 
+                                    encoding:[NSString defaultCStringEncoding]] options:0 error:&error];
+        if (!deferredLibrary)
+            printf("[error] failed to create MTLLibrary, reason: %s\n", [[error localizedDescription] UTF8String]);
+
+        //TODO: handle errors
+        MTLFunctionDescriptor* functionDescriptor = [[MTLFunctionDescriptor alloc] init];
+        [functionDescriptor setName:@"vertexTriangle"];
+        error = nullptr;
+        deferredPipelineState->vertexFunction = [deferredLibrary newFunctionWithDescriptor:functionDescriptor error:&error];
+        if (deferredPipelineState->vertexFunction == nil)
+            printf("%s\n", [[error localizedDescription] UTF8String]);
+        [functionDescriptor setName:@"fragmentDeferred"];
+        error = nullptr;
+        deferredPipelineState->fragmentFunction = [deferredLibrary newFunctionWithDescriptor:functionDescriptor error:&error];
+        if (deferredPipelineState->fragmentFunction == nil)
+            printf("%s\n", [[error localizedDescription] UTF8String]);
+
+        MTLRenderPipelineDescriptor* renderPipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
+        renderPipelineDescriptor.vertexFunction = deferredPipelineState->vertexFunction;
+        renderPipelineDescriptor.fragmentFunction = deferredPipelineState->fragmentFunction;
+        renderPipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
+        renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
+        renderPipelineDescriptor.colorAttachments[1].pixelFormat = [albedoMetallicAttachment pixelFormat];
+        renderPipelineDescriptor.colorAttachments[2].pixelFormat = [normalRoughnessAttachment pixelFormat];
+        if (depthAttachment)
+            renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
+
+        error = nullptr;
+        deferredPipelineState->pipelineState = [device newRenderPipelineStateWithDescriptor:renderPipelineDescriptor error:&error];
+        if (!deferredPipelineState->pipelineState)
+            printf("[error] failed to create MTLRenderPipelineState, reason: %s\n", [[error localizedDescription] UTF8String]);
+    }
+
+    [encoder setRenderPipelineState:deferredPipelineState->pipelineState];
 }
 
 } //namespace anari_mtl
