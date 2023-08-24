@@ -43,6 +43,54 @@ vertex VertexOut vertexMain(VertexIn in [[stage_in]],
     return out;
 }
 
+struct FragmentOut {
+    float4 albedoMetallic [[color(0)]];
+    float4 normalRoughness [[color(1)]];
+};
+
+fragment FragmentOut fragmentMain(VertexOut in [[stage_in]],
+                             constant Material& material [[buffer(2)]],
+                             texture2d<float> albedoTexture [[texture(0)]],
+                             sampler albedoSampler [[sampler(0)]]) {
+    float3 albedo = in.color.rgb * material.albedo.rgb * material.albedo.a;
+    if (hasTexCoords) {
+        float4 sampledAlbedo = albedoTexture.sample(albedoSampler, in.texCoord);
+        //if (sampledAlbedo.a < 0.5)
+        //    discard_fragment();
+        albedo *= sampledAlbedo.rgb;
+    }
+    float3 F0 = mix(float3(0.04), albedo, material.metallic);
+
+    FragmentOut out;
+    out.albedoMetallic = float4(albedo, material.metallic);
+    out.normalRoughness = float4(in.normal, 1.0);
+
+    return out;
+}
+)V0G0N";
+
+const char* deferredShaderSource = R"V0G0N(
+#include <metal_stdlib>
+using namespace metal;
+
+struct VertexOut {
+    float4 position [[position]];
+    half2 texCoord;
+};
+
+half2 triangleTexCoords[] = {
+    //TODO: put the fullscreen triangle coords here
+};
+
+vertex VertexOut vertexTriangle(uint vid [[vertex_id]]) {
+    VertexOut out;
+    out.texCoord = triangleTexCoords[vid];
+    out.position = out.texCoord * 2.0 - 1.0;
+    out.position.y = -out.position.y;
+
+    return out;
+}
+
 struct Light {
     packed_float3 color;
     packed_float3 direction;
@@ -118,31 +166,31 @@ float3 calculateDirectionalLightingForPBM(constant Light& light, float3 viewDir,
     return (kD * albedo / PI + spec) * radiance * NdotL * light.color * 2.0;
 }
 
-fragment float4 fragmentMain(VertexOut in [[stage_in]],
-                             constant float3& viewPos [[buffer(0)]],
-                             constant Light& light [[buffer(1)]],
-                             constant Material& material [[buffer(2)]],
-                             texture2d<float> albedoTexture [[texture(0)]],
-                             sampler albedoSampler [[sampler(0)]]) {
-    float3 viewDir = normalize(viewPos - in.worldPosition);
-    float3 albedo = in.color.rgb * material.albedo.rgb * material.albedo.a;
-    if (hasTexCoords) {
-        float4 sampledAlbedo = albedoTexture.sample(albedoSampler, in.texCoord);
-        //if (sampledAlbedo.a < 0.5)
-        //    discard_fragment();
-        albedo *= sampledAlbedo.rgb;
-    }
-    float3 F0 = mix(float3(0.04), albedo, material.metallic);
+fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
+                                uint2 coord [[position]],
+                                constant float3& viewPos [[buffer(0)]],
+                                constant Light& light [[buffer(1)]],
+                                constant float4x4& invViewProj [[buffer(2)]],
+                                texture2d<float> albedoMetallicTexture [[texture(0)]],
+                                texture2d<float> normalRoughnessTexture [[texture(1)]],
+                                texture2d<float> depthTexture [[texture(2)]]) {
+    float4 worldPosition = invViewProj * float4(in.position, depthTexture.read(uint2(coord)), 1.0);
+    float3 viewDir = normalize(viewPos - worldPosition.xyz);
 
-    return float4(albedo * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedo, in.normal, F0, material.roughness), in.color.a);
+    float4 albedoMetallic = albedoMetallicTexture.read(uint2(coord));
+    float4 normalRoughness = normalRoughnessTexture.read(uint2(coord));
+
+    float3 F0 = mix(float3(0.04), albedoMetallic.rgb, albedoMetallic.a);
+
+    return float4(albedoMetallic.rgb * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedoMetallic.rgb, normalRoughness.xyz, F0, normalRoughness.roughness), 1.0);
 }
 )V0G0N";
 
 namespace anari_mtl {
 
-ForwardPipeline::ForwardPipeline(id aDevice) : Pipeline(aDevice, shaderSource) {}
+HybridPipeline::HybridPipeline(id aDevice) : Pipeline(aDevice, shaderSource) {}
 
-void ForwardPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) {
+void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) {
     std::vector<ConstantValue> constantValues = {
         {(void*)&config.hasColors, 0},
         {(void*)&config.hasTexCoords, 1}
@@ -154,7 +202,8 @@ void ForwardPipeline::createPipeline(PipelineState* renderPipelineState, const P
     renderPipelineDescriptor.vertexFunction = renderPipelineState->mainVertexFunction;
     renderPipelineDescriptor.fragmentFunction = renderPipelineState->mainFragmentFunction;
     renderPipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
-    renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
+    renderPipelineDescriptor.colorAttachments[0].pixelFormat = [albedoMetallicTexture pixelFormat];
+    renderPipelineDescriptor.colorAttachments[1].pixelFormat = [normalRoughnessTexture pixelFormat];
     if (depthAttachment)
         renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
     renderPipelineDescriptor.vertexDescriptor = (MTLVertexDescriptor*)mtlVertexDescriptor;

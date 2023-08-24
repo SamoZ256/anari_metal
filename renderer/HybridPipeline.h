@@ -4,9 +4,9 @@
 
 namespace anari_mtl {
 
-class ForwardPipeline : public Pipeline {
+class HybridPipeline : public Pipeline {
 public:
-    ForwardPipeline(id aDevice);
+    HybridPipeline(id aDevice);
 
 private:
     void createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) override;
