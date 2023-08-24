@@ -6,16 +6,17 @@
       "anari_core_1_0",
       "anari_core_objects_base_1_0",
       "khr_instance_transform",
-      "khr_camera_orthographic",
       "khr_camera_perspective",
       "khr_geometry_triangle",
+      "khr_instance_transform",
+      "khr_light_directional",
       "khr_material_matte",
       "khr_material_physicallyBased",
+      "khr_renderer_ambient_light",
+      "khr_renderer_background_color",
       "khr_sampler_image1d",
       "khr_sampler_image2d",
       "khr_sampler_image3d",
-      "khr_sampler_primitive",
-      "khr_sampler_transform",
       "khr_spatial_field_structured_regular",
       "khr_volume_transfer_function1d"
     ]
@@ -52,6 +53,62 @@
     {
       "type": "ANARI_RENDERER",
       "name": "default",
+      "parameters": [
+        {
+          "name": "background",
+          "types": [
+            "ANARI_FLOAT32_VEC4"
+          ],
+          "tags": [],
+          "default": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "description": "background color and alpha (RGBA)"
+        },
+        {
+          "name": "ambientRadiance",
+          "types": [
+            "ANARI_FLOAT32"
+          ],
+          "tags": [],
+          "default": 1.0,
+          "description": "ambient light intensity"
+        },
+        {
+          "name": "mode",
+          "types": [
+            "ANARI_STRING"
+          ],
+          "tags": [],
+          "default": "default",
+          "values": [
+            "default",
+            "primID",
+            "geomID",
+            "instID",
+            "Ng",
+            "Ng.abs",
+            "uvw",
+            "backface",
+            "hitSurface",
+            "hitVolume",
+            "geometry.attribute0",
+            "geometry.attribute1",
+            "geometry.attribute2",
+            "geometry.attribute3",
+            "geometry.color",
+            "opacityHeatmap"
+          ],
+          "description": "visualization modes (most for debugging)"
+        }
+      ]
+    },
+    {
+      "type": "ANARI_RENDERER",
+      "name": "hybrid",
       "parameters": [
         {
           "name": "background",

@@ -213,7 +213,7 @@ int AnariMetalDevice::getProperty(ANARIObject object,
         if (prop == "feature" && type == ANARI_STRING_LIST) {
             helium::writeToVoidP(mem, query_extensions());
             return 1;
-        } else if (prop == "anari-metal" && type == ANARI_BOOL) {
+        } else if (prop == "anari_metal" && type == ANARI_BOOL) {
             helium::writeToVoidP(mem, true);
             return 1;
         }
@@ -304,7 +304,7 @@ void AnariMetalDevice::initDevice()
     if (m_initialized)
         return;
 
-    reportMessage(ANARI_SEVERITY_DEBUG, "initializing anari-metal device (%p)", this);
+    reportMessage(ANARI_SEVERITY_DEBUG, "initializing anari_metal device (%p)", this);
 
     auto &state = *deviceState();
 
