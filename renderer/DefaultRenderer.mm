@@ -99,20 +99,4 @@ void DefaultRenderer::renderFrame(World* world, Camera* camera, id colorTexture,
     [encoder release];
 }
 
-bool DefaultRenderer::ready() {
-    if (!commandBuffer) {
-        reportMessage(ANARI_SEVERITY_WARNING, "renderer that hasn't rendered yet is always ready");
-        return true;
-    }
-    return ([commandBuffer status] == MTLCommandBufferStatusCompleted);
-}
-
-void DefaultRenderer::wait() {
-    if (!commandBuffer) {
-        reportMessage(ANARI_SEVERITY_WARNING, "cannot wait on a renderer that has not rendered anything yet");
-        return;
-    }
-    [commandBuffer waitUntilCompleted];
-}
-
 } //namespace anari_mtl

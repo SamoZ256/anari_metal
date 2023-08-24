@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AnariMetalGlobalState.h"
-#include "renderer/ForwardPipeline.h"
 
 //helium
 #include "helium/BaseObject.h"
@@ -14,12 +13,24 @@
 
 namespace anari_mtl {
 
+#define PIPELINE_CONFIG_COUNT 4
+#define PIPELINE_HASH_T uint8_t
+
+struct PipelineConfig {
+    bool hasColors;
+    bool hasTexCoords;
+
+    PIPELINE_HASH_T getHash() const {
+        return (hasColors & 0x1) | (hasTexCoords & 0x1) << 1;
+    }
+};
+
 struct Object;
 
 struct Renderable {
     Object* object;
     float4x4 modelMatrix;
-    ForwardPipelineConfig config;
+    PipelineConfig config;
 };
 
 struct Bounds {

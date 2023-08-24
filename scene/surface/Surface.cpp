@@ -27,7 +27,7 @@ void Surface::render(id encoder, const float4x4& modelMatrix) {
 }
 
 void Surface::getRenderables(std::vector<Renderable>& renderables, const float4x4& parentModelMatrix) {
-    renderables.push_back({this, parentModelMatrix, ForwardPipelineConfig{geometry->hasColors(), geometry->hasTexCoords()}});
+    renderables.push_back({this, parentModelMatrix, PipelineConfig{geometry->hasColors(), geometry->hasTexCoords()}});
 }
 
 Bounds Surface::getBounds(const float4x4& parentModelMatrix) {

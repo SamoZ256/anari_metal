@@ -27,6 +27,22 @@ void Renderer::cleanup() {
     //TODO
 }
 
+bool Renderer::ready() {
+    if (!commandBuffer) {
+        reportMessage(ANARI_SEVERITY_WARNING, "renderer that hasn't rendered yet is always ready");
+        return true;
+    }
+    return ([commandBuffer status] == MTLCommandBufferStatusCompleted);
+}
+
+void Renderer::wait() {
+    if (!commandBuffer) {
+        reportMessage(ANARI_SEVERITY_WARNING, "cannot wait on a renderer that has not rendered anything yet");
+        return;
+    }
+    [commandBuffer waitUntilCompleted];
+}
+
 } //namespace anari_mtl
 
 ANARI_METAL_TYPEFOR_DEFINITION(anari_mtl::Renderer*);

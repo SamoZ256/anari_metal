@@ -17,12 +17,13 @@ public:
 
     virtual void renderFrame(World* world, Camera* camera, id colorTexture = nullptr, id depthTexture = nullptr) = 0;
 
-    virtual bool ready() = 0;
+    bool ready();
 
-    virtual void wait() = 0;
+    void wait();
 
 protected:
     float4 clearColor; //TODO: make a union from this to support other types
+    id commandBuffer = nullptr;
 
     void cleanup();
 };
