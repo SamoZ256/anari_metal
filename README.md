@@ -2,7 +2,7 @@
 
 ## About The Project
 
-This is an [Anari](https://github.com/KhronosGroup/ANARI-SDK) device implementation on top of Apple's [Metal](https://developer.apple.com/metal/) library. It uses a classical forward renderer with no postprocessing effects.
+This is an [Anari](https://github.com/KhronosGroup/ANARI-SDK) device implementation on top of Apple's [Metal](https://developer.apple.com/metal/) library. It has 2 renderers, default (forward) and hybrid (deferred, ray traced postprocessing effects will be added).
 
 ### Limitations
 
