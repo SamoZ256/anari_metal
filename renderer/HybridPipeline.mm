@@ -228,15 +228,8 @@ void HybridPipeline::bindDeferred(id encoder, id colorAttachment, id albedoMetal
             printf("[error] failed to create MTLLibrary, reason: %s\n", [[error localizedDescription] UTF8String]);
 
         //TODO: handle errors
-        MTLFunctionDescriptor* functionDescriptor = [[MTLFunctionDescriptor alloc] init];
-        [functionDescriptor setName:@"vertexTriangle"];
-        error = nullptr;
-        deferredPipelineState->vertexFunction = [deferredLibrary newFunctionWithDescriptor:functionDescriptor error:&error];
-        if (deferredPipelineState->vertexFunction == nil)
-            printf("%s\n", [[error localizedDescription] UTF8String]);
-        [functionDescriptor setName:@"fragmentDeferred"];
-        error = nullptr;
-        deferredPipelineState->fragmentFunction = [deferredLibrary newFunctionWithDescriptor:functionDescriptor error:&error];
+        deferredPipelineState->vertexFunction = [deferredLibrary newFunctionWithName:@"vertexTriangle"];
+        deferredPipelineState->fragmentFunction = [deferredLibrary newFunctionWithName:@"fragmentDeferred"];
         if (deferredPipelineState->fragmentFunction == nil)
             printf("%s\n", [[error localizedDescription] UTF8String]);
 
