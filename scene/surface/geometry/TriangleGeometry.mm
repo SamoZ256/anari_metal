@@ -101,4 +101,15 @@ void TriangleGeometry::commit() {
     initMTLBuffers();
 }
 
+void* TriangleGeometry::getGeometryDescriptor() {
+    MTLAccelerationStructureTriangleGeometryDescriptor* geometryDescriptor = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
+    geometryDescriptor.indexBuffer = INDEX_BUFFER;
+    geometryDescriptor.indexType = MTLIndexTypeUInt32; //TODO: use UInt16 in case it's required
+    geometryDescriptor.vertexBuffer = POSITION_BUFFER;
+    geometryDescriptor.vertexStride = sizeof(float3);
+    geometryDescriptor.triangleCount = INDEX_ATTR->getElementCount() / 3;
+
+    return geometryDescriptor;
+}
+
 } //namespace anari_mtl

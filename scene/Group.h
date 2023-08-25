@@ -16,8 +16,13 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
+    void* buildAccelerationStructures();
+
 private:
     Array* handles = nullptr;
+
+    void* mtlAccelerationStructures;
+    bool builtAccelerationStructure = false;
 };
 
 } //namespace anari_mtl

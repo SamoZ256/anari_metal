@@ -6,10 +6,6 @@
 namespace anari_mtl {
 
 class Surface : public Object {
-private:
-    Geometry* geometry;
-    Material* material;
-
 public:
     Surface(AnariMetalGlobalState* s);
 
@@ -22,6 +18,15 @@ public:
     void getRenderables(std::vector<Renderable>& renderables, const float4x4& parentModelMatrix) override;
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
+
+    id buildAccelerationStructure();
+
+private:
+    Geometry* geometry;
+    Material* material;
+
+    id mtlAccelerationStructure;
+    bool builtAccelerationStructure = false;
 };
 
 } //namespace anari_mtl

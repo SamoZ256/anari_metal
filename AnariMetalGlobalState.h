@@ -9,6 +9,7 @@
 //metal
 #ifdef __OBJC__
 #import <Metal/Metal.h>
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 #else
 typedef void* id;
 #endif

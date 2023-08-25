@@ -43,6 +43,8 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
+    virtual void* getGeometryDescriptor() = 0;
+
     //Attributes
     bool hasColors() {
         return COLOR_ATTR;
