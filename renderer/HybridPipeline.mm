@@ -77,6 +77,7 @@ fragment FragmentOut fragmentMain(VertexOut in [[stage_in]],
 const char* deferredShaderSource = R"V0G0N(
 #include <metal_stdlib>
 using namespace metal;
+using namespace raytracing;
 
 //Constants
 constant float PI = 3.14159265359;
@@ -176,7 +177,9 @@ fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
                                 float depth [[color(3)]],
                                 constant float3& viewPos [[buffer(0)]],
                                 constant Light& light [[buffer(1)]],
-                                constant float4x4& invViewProj [[buffer(2)]]) {
+                                constant float4x4& invViewProj [[buffer(2)]],
+                                constant MTLAccelerationStructureInstanceDescriptor* instances [[buffer(3)]],
+                                instance_acceleration_structure accelerationStructure [[buffer(4)]]) {
     float2 normPosition = float2(in.texCoord) * 2.0 - 1.0;
     normPosition.y = -normPosition.y;
     float4 worldPosition = invViewProj * float4(normPosition, depth, 1.0);
@@ -185,7 +188,32 @@ fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
 
     float3 F0 = mix(float3(0.04), albedoMetallic.rgb, albedoMetallic.a);
 
-    return float4(albedoMetallic.rgb * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedoMetallic.rgb, normalRoughness.xyz, F0, normalRoughness.a), 1.0);
+    float3 color = albedoMetallic.rgb * 0.4 + calculateDirectionalLightingForPBM(light, viewDir, albedoMetallic.rgb, normalRoughness.xyz, F0, normalRoughness.a);
+
+    //Raytracing
+    ray r;
+    r.origin = worldPosition.xyz;
+    r.direction = reflect(normalRoughness.xyz, viewDir);
+    r.min_distance = 0.001;
+    r.max_distance = INFINITY;
+
+    intersector<triangle_data, instancing> intersectr;
+    intersectr.assume_geometry_type(geometry_type::triangle);
+    intersectr.force_opacity(forced_opacity::opaque);
+    typename intersector<triangle_data, instancing>::result_type intersection;
+
+    intersectr.accept_any_intersection(false);
+
+    intersection = intersectr.intersect(r, accelerationStructure, 1);
+
+    if (intersection.type == intersection_type::none) {
+        //TODO: sample background
+    } else {
+        float3 reflectionWorldPos = r.origin + r.direction * intersection.distance;
+        color += reflectionWorldPos;
+    }
+
+    return float4(color, 1.0);
 }
 )V0G0N";
 

@@ -103,17 +103,19 @@ void TriangleGeometry::commit() {
     initMTLBuffers();
 }
 
-id TriangleGeometry::buildAccelerationStructureAndAddToList(void* list) {
+void TriangleGeometry::buildAccelerationStructureAndAddToList(void* list) {
     //addToList(list);
     if (!builtAccelerationStructure) {
         MTLAccelerationStructureTriangleGeometryDescriptor* geometryDescriptor = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
-        geometryDescriptor.indexBuffer = INDEX_BUFFER;
-        geometryDescriptor.indexType = MTLIndexTypeUInt32; //TODO: use UInt16 in case it's required
+        if (INDEX_ATTR) {
+            geometryDescriptor.indexBuffer = INDEX_BUFFER;
+            geometryDescriptor.indexType = MTLIndexTypeUInt32; //TODO: use UInt16 in case it's required
+        }
         geometryDescriptor.vertexBuffer = POSITION_BUFFER;
         geometryDescriptor.vertexStride = sizeof(float3);
-        geometryDescriptor.triangleCount = (INDEX_ATTR ? INDEX_ATTR : POSITION_ATTR)->getElementCount() / 3;
+        geometryDescriptor.triangleCount = (INDEX_ATTR ? INDEX_ATTR : POSITION_ATTR)->getElementCount() / 3 * 3; //HACK: for some reason, the triangle count should be set to index count (???)
         
-        MTLPrimitiveAccelerationStructureDescriptor *accelDescriptor = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
+        MTLPrimitiveAccelerationStructureDescriptor* accelDescriptor = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
         accelDescriptor.geometryDescriptors = @[geometryDescriptor];
 
         id<MTLAccelerationStructure> accelerationStructure = helper::buildAccelerationStructure(deviceState()->mtlDevice, deviceState()->mtlCommandQueue, accelDescriptor);
@@ -123,8 +125,6 @@ id TriangleGeometry::buildAccelerationStructureAndAddToList(void* list) {
 
         builtAccelerationStructure = true;
     }
-
-    return mtlAccelerationStructure;
 }
 
 } //namespace anari_mtl

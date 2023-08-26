@@ -8,7 +8,7 @@ public:
 
     void commit() override;
 
-    id buildAccelerationStructureAndAddToList(void* list) override;
+    void buildAccelerationStructureAndAddToList(void* list) override;
 };
 
 } //namespace anari_mtl

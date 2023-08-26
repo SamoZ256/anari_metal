@@ -43,7 +43,7 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
-    virtual id buildAccelerationStructureAndAddToList(void* list) = 0;
+    virtual void buildAccelerationStructureAndAddToList(void* list) = 0;
 
     long getUUID() {
         return uuid;

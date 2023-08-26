@@ -23,12 +23,24 @@ public:
 
     virtual void commit() override;
 
+    const float4x4& getViewProj() {
+        return viewProj;
+    }
+
     const float3& getPosition() {
         return position;
     }
 
-    const float4x4& getViewProj() {
-        return viewProj;
+    float3 getRight() {
+        return cross(direction, up);
+    }
+
+    const float3& getUp() {
+        return up;
+    }
+
+    const float3& getForward() {
+        return direction;
     }
 };
 

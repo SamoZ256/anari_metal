@@ -31,6 +31,14 @@ public:
         return lights;
     }
 
+    id getInstanceBuffer() {
+        return instanceBuffer;
+    }
+
+    id getInstanceAccelerationStructure() {
+        return instanceAccelerationStructure;
+    }
+
 private:
     Array* instances = nullptr;
     Array* surfaces = nullptr;
@@ -38,6 +46,7 @@ private:
     
     Bounds bounds;
 
+    id instanceBuffer;
     id instanceAccelerationStructure;
     bool builtAccelerationStructure = false;
 };

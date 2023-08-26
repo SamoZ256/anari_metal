@@ -59,8 +59,8 @@ void World::buildAccelerationStructure() {
         size_t surfaceCount = (surfaces ? surfaces->getElementCount() : 0);
         size_t instanceDescriptorCount = instanceCount + surfaceCount;
 
-        id<MTLBuffer> instanceBuffer = [deviceState()->mtlDevice newBufferWithLength:sizeof(MTLAccelerationStructureInstanceDescriptor) * instanceDescriptorCount options:MTLResourceStorageModeShared];
-        MTLAccelerationStructureInstanceDescriptor* instanceDescriptors = (MTLAccelerationStructureInstanceDescriptor*)instanceBuffer.contents;
+        instanceBuffer = [deviceState()->mtlDevice newBufferWithLength:sizeof(MTLAccelerationStructureInstanceDescriptor) * instanceDescriptorCount options:MTLResourceStorageModeShared];
+        MTLAccelerationStructureInstanceDescriptor* instanceDescriptors = (MTLAccelerationStructureInstanceDescriptor*)((id<MTLBuffer>)instanceBuffer).contents;
 
         if (instances) {
             for (uint32_t i = 0; i < instances->getElementCount(); i++) {
