@@ -19,6 +19,7 @@ The project is currently in an early stage of development, and there are some li
 9. The 'Matte' material is currently the same as PBM material
 10. Some primitive attributes don't work, like primitive.color and primitive.attributeXX
 11. Sampler ignores it's parameters (will be fixed soon)
+12. Reflections only work for surfaces, not instances
 
 ## Getting Started
 

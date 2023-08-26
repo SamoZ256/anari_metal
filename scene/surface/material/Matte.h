@@ -12,6 +12,14 @@ public:
 
     void uploadToShader(id encoder) override;
 
+    const float4& getColor() override {
+        return uniforms.color;
+    }
+
+    id getColorTexture() override {
+        return (colorSampler ? colorSampler->getColorTexture() : nullptr);
+    }
+
 private:
     float opacity;
     struct {

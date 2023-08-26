@@ -49,6 +49,18 @@ public:
         return uuid;
     }
 
+    id getIndexBuffer() {
+        return INDEX_BUFFER;
+    }
+
+    id getTexCoordBuffer() {
+        return ATTRIBUTE_BUFFER(0);
+    }
+
+    id getNormalBuffer() {
+        return NORMAL_BUFFER;
+    }
+
     //Attributes
     bool hasColors() {
         return COLOR_ATTR;

@@ -12,6 +12,14 @@ public:
 
     void uploadToShader(id encoder) override;
 
+    const float4& getColor() override {
+        return uniforms.albedo;
+    }
+
+    id getColorTexture() override {
+        return (albedoSampler ? albedoSampler->getColorTexture() : nullptr);
+    }
+
 private:
     float opacity;
     struct {

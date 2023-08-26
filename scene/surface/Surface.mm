@@ -45,4 +45,24 @@ void Surface::createInstanceAccelerationStructureDescriptor(void* instanceDescri
     helper::createInstanceAccelerationStructureDescriptor(*((MTLAccelerationStructureInstanceDescriptor*)instanceDescriptor), geometry->getUUID(), identity);
 }
 
+NSMutableArray<id<MTLResource>>* Surface::getResources(float4* color, bool* hasColorTexture) {
+    NSMutableArray* resources = @[ geometry->getIndexBuffer(), geometry->getNormalBuffer() ];
+    id texCoordBuffer = geometry->getTexCoordBuffer();
+    if (texCoordBuffer)
+        [resources addObject:texCoordBuffer];
+    id colorTexture = material->getColorTexture();
+    if (colorTexture) {
+        [resources addObject:colorTexture];
+        if (hasColorTexture)
+            *hasColorTexture = true;
+    } else {
+        if (color)
+            *color = material->getColor();
+        if (hasColorTexture)
+            *hasColorTexture = false;
+    }
+
+    return resources;
+}
+
 } //namespace anari_mtl

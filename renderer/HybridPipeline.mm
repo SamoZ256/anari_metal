@@ -171,6 +171,37 @@ float3 calculateDirectionalLightingForPBM(constant Light& light, float3 viewDir,
     return (kD * albedo / PI + spec) * radiance * NdotL * light.color * 2.0;
 }
 
+template<typename T>
+inline T interpolateVertexAttribute(thread T *attributes, float2 uv) {
+    // Look up the value for each vertex.
+    const T T0 = attributes[0];
+    const T T1 = attributes[1];
+    const T T2 = attributes[2];
+
+    // Compute the sum of the vertex attributes weighted by the barycentric coordinates.
+    // The barycentric coordinates sum to one.
+    return (1.0f - uv.x - uv.y) * T0 + uv.x * T1 + uv.y * T2;
+}
+
+__attribute__((always_inline))
+float3 transformDirection(float3 p, float4x4 transform) {
+    return (transform * float4(p, 0.0f)).xyz;
+}
+
+struct Triangle {
+    float2 texCoords[3];
+    float3 normals[3];
+};
+
+struct TriangleResources {
+    device uint32_t* indices;
+    device packed_float3* vertexNormals;
+    device packed_float2* vertexTexCoords;
+    texture2d<float> albedoTexture;
+    float4 albedo;
+    bool hasAlbedoTexture;
+};
+
 fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
                                 float4 albedoMetallic [[color(1)]],
                                 float4 normalRoughness [[color(2)]],
@@ -179,7 +210,10 @@ fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
                                 constant Light& light [[buffer(1)]],
                                 constant float4x4& invViewProj [[buffer(2)]],
                                 constant MTLAccelerationStructureInstanceDescriptor* instances [[buffer(3)]],
-                                instance_acceleration_structure accelerationStructure [[buffer(4)]]) {
+                                instance_acceleration_structure accelerationStructure [[buffer(4)]],
+                                device TriangleResources* resources [[buffer(5)]]) {
+    sampler basicSampler;
+
     float2 normPosition = float2(in.texCoord) * 2.0 - 1.0;
     normPosition.y = -normPosition.y;
     float4 worldPosition = invViewProj * float4(normPosition, depth, 1.0);
@@ -210,7 +244,45 @@ fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
         //TODO: sample background
     } else {
         float3 reflectionWorldPos = r.origin + r.direction * intersection.distance;
-        color += reflectionWorldPos;
+
+        unsigned int instanceIndex = intersection.instance_id;
+        unsigned primitiveIndex = intersection.primitive_id;
+        unsigned int geometryIndex = instances[instanceIndex].accelerationStructureIndex;
+        float2 barycentric_coords = intersection.triangle_barycentric_coord;
+
+        float4x4 model(1.0);
+        for (int column = 0; column < 4; column++)
+            for (int row = 0; row < 3; row++)
+                model[column][row] = instances[instanceIndex].transformationMatrix[column][row];
+
+        device TriangleResources& triangleResources = resources[geometryIndex];
+        //bool hasAnyTexture = triangleResources.hasAlbedoTexture;
+        
+        Triangle triangle;
+        
+        //if (hasAnyTexture) {
+        //    triangle.texCoords[0] = triangleResources.vertexTexCoords[triangleResources.indices[primitiveIndex * 3 + 0]];
+        //    triangle.texCoords[1] = triangleResources.vertexTexCoords[triangleResources.indices[primitiveIndex * 3 + 1]];
+        //    triangle.texCoords[2] = triangleResources.vertexTexCoords[triangleResources.indices[primitiveIndex * 3 + 2]];
+        //}
+
+        triangle.normals[0] = triangleResources.vertexNormals[triangleResources.indices[primitiveIndex * 3 + 0]];
+        triangle.normals[1] = triangleResources.vertexNormals[triangleResources.indices[primitiveIndex * 3 + 1]];
+        triangle.normals[2] = triangleResources.vertexNormals[triangleResources.indices[primitiveIndex * 3 + 2]];
+        
+        // Interpolate the vertex normal at the intersection point.
+        float3 reflectionNormal = interpolateVertexAttribute(triangle.normals, barycentric_coords);
+        reflectionNormal = normalize(transformDirection(reflectionNormal, model));
+        float2 reflectionTexCoord = interpolateVertexAttribute(triangle.texCoords, barycentric_coords);
+        float3 reflectionAlbedo = reflectionNormal;//triangleResources.albedo.rgb;
+        //if (triangleResources.hasAlbedoTexture)
+        //    triangleResources.albedoTexture.sample(basicSampler, reflectionTexCoord).rgb;
+        float3 reflectionF0 = mix(float3(0.04), reflectionAlbedo, 1.0); //TODO: use the metallic from texture
+        float reflectionRoughness = 1.0; //TODO: use the roughness from texture
+
+        float3 reflectionColor = reflectionAlbedo * 0.4 + calculateDirectionalLightingForPBM(light, r.direction, reflectionAlbedo, reflectionNormal, reflectionF0, reflectionRoughness);
+
+        color += reflectionColor;
     }
 
     return float4(color, 1.0);

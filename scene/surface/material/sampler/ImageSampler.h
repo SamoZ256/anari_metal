@@ -24,6 +24,10 @@ public:
 
     void initMTLTexture();
 
+    id getColorTexture() override {
+        return mtlTexture;
+    }
+
 private:
     ImageType imageType;
     id mtlTexture = nullptr;

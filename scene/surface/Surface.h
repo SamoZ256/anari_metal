@@ -23,6 +23,8 @@ public:
 
     void createInstanceAccelerationStructureDescriptor(void* list);
 
+    NSMutableArray<id<MTLResource>>* getResources(float4* color = nullptr, bool* hasColorTexture = nullptr);
+
 private:
     Geometry* geometry;
     Material* material;

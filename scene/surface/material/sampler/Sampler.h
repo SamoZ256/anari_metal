@@ -30,6 +30,8 @@ public:
 
     void initMTLSamplerState();
 
+    virtual id getColorTexture() = 0;
+
 protected:
     Filter filter;
     AddressMode addressModeS;

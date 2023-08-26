@@ -129,6 +129,7 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
     [encoder setFragmentBytes:&invViewProj length:sizeof(float4x4) atIndex:2];
     [encoder setFragmentBuffer:world->getInstanceBuffer() offset:0 atIndex:3];
     [encoder setFragmentAccelerationStructure:world->getInstanceAccelerationStructure() atBufferIndex:4];
+    [encoder setFragmentBuffer:world->getResourcesBuffer() offset:0 atIndex:5];
 
     Array* lights = world->getLights();
     if (lights) {

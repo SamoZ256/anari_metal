@@ -31,6 +31,10 @@ public:
         return lights;
     }
 
+    id getResourcesBuffer() {
+        return resourcesBuffer;
+    }
+
     id getInstanceBuffer() {
         return instanceBuffer;
     }
@@ -46,6 +50,7 @@ private:
     
     Bounds bounds;
 
+    id resourcesBuffer;
     id instanceBuffer;
     id instanceAccelerationStructure;
     bool builtAccelerationStructure = false;

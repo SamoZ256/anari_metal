@@ -11,10 +11,6 @@ enum class AlphaMode {
 };
 
 class Material : public Object {
-protected:
-    AlphaMode alphaMode;
-    float alphaCutoff;
-
 public:
     Material(AnariMetalGlobalState* s);
 
@@ -25,6 +21,14 @@ public:
     void commit() override;
 
     virtual void uploadToShader(id encoder);
+
+    virtual const float4& getColor() = 0;
+
+    virtual id getColorTexture() = 0;
+
+protected:
+    AlphaMode alphaMode;
+    float alphaCutoff;
 };
 
 } //namespace anari_mtl
