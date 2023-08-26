@@ -43,6 +43,7 @@ vertex VertexOut vertexMain(VertexIn in [[stage_in]],
 struct FragmentOut {
     float4 albedoMetallic [[color(1)]];
     float4 normalRoughness [[color(2)]];
+    float depth [[color(3)]];
 };
 
 struct Material {
@@ -52,9 +53,9 @@ struct Material {
 };
 
 fragment FragmentOut fragmentMain(VertexOut in [[stage_in]],
-                             constant Material& material [[buffer(2)]],
-                             texture2d<float> albedoTexture [[texture(0)]],
-                             sampler albedoSampler [[sampler(0)]]) {
+                                  constant Material& material [[buffer(2)]],
+                                  texture2d<float> albedoTexture [[texture(0)]],
+                                  sampler albedoSampler [[sampler(0)]]) {
     float3 albedo = in.color.rgb * material.albedo.rgb * material.albedo.a;
     if (hasTexCoords) {
         float4 sampledAlbedo = albedoTexture.sample(albedoSampler, in.texCoord);
@@ -67,6 +68,7 @@ fragment FragmentOut fragmentMain(VertexOut in [[stage_in]],
     FragmentOut out;
     out.albedoMetallic = float4(albedo, material.metallic);
     out.normalRoughness = float4(in.normal, 1.0);
+    out.depth = in.position.z;
 
     return out;
 }
@@ -171,11 +173,14 @@ float3 calculateDirectionalLightingForPBM(constant Light& light, float3 viewDir,
 fragment float4 fragmentDeferred(VertexOut in [[stage_in]],
                                 float4 albedoMetallic [[color(1)]],
                                 float4 normalRoughness [[color(2)]],
+                                float depth [[color(3)]],
                                 constant float3& viewPos [[buffer(0)]],
                                 constant Light& light [[buffer(1)]],
-                                constant float4x4& invViewProj [[buffer(2)]]/*,
-                                texture2d<float> depthTexture [[texture(2)]]*/) {
-    float4 worldPosition = float4(1.0);//invViewProj * float4(in.position, depthTexture.read(uint2(coord)), 1.0);
+                                constant float4x4& invViewProj [[buffer(2)]]) {
+    float2 normPosition = float2(in.texCoord) * 2.0 - 1.0;
+    normPosition.y = -normPosition.y;
+    float4 worldPosition = invViewProj * float4(normPosition, depth, 1.0);
+    worldPosition.xyz /= worldPosition.w;
     float3 viewDir = normalize(viewPos - worldPosition.xyz);
 
     float3 F0 = mix(float3(0.04), albedoMetallic.rgb, albedoMetallic.a);
@@ -192,7 +197,7 @@ HybridPipeline::~HybridPipeline() {
     //TODO: release all the objects
 }
 
-void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment) {
+void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) {
     std::vector<ConstantValue> constantValues = {
         {(void*)&config.hasColors, 0},
         {(void*)&config.hasTexCoords, 1}
@@ -207,6 +212,7 @@ void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const Pi
     renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
     renderPipelineDescriptor.colorAttachments[1].pixelFormat = [albedoMetallicAttachment pixelFormat];
     renderPipelineDescriptor.colorAttachments[2].pixelFormat = [normalRoughnessAttachment pixelFormat];
+    renderPipelineDescriptor.colorAttachments[3].pixelFormat = [depthAsColorAttachment pixelFormat];
     if (depthAttachment)
         renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
     renderPipelineDescriptor.vertexDescriptor = (MTLVertexDescriptor*)mtlVertexDescriptor;
@@ -217,7 +223,7 @@ void HybridPipeline::createPipeline(PipelineState* renderPipelineState, const Pi
         printf("[error] failed to create MTLRenderPipelineState, reason: %s\n", [[error localizedDescription] UTF8String]);
 }
 
-void HybridPipeline::bindDeferred(id encoder, id colorAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAttachment) {
+void HybridPipeline::bindDeferred(id encoder, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) {
     if (!deferredPipelineState) {
         deferredPipelineState = new PipelineState{};
 
@@ -240,6 +246,7 @@ void HybridPipeline::bindDeferred(id encoder, id colorAttachment, id albedoMetal
         renderPipelineDescriptor.colorAttachments[0].pixelFormat = [colorAttachment pixelFormat];
         renderPipelineDescriptor.colorAttachments[1].pixelFormat = [albedoMetallicAttachment pixelFormat];
         renderPipelineDescriptor.colorAttachments[2].pixelFormat = [normalRoughnessAttachment pixelFormat];
+        renderPipelineDescriptor.colorAttachments[3].pixelFormat = [depthAsColorAttachment pixelFormat];
         if (depthAttachment)
             renderPipelineDescriptor.depthAttachmentPixelFormat = [depthAttachment pixelFormat];
 

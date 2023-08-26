@@ -18,6 +18,7 @@ public:
 private:
     id albedoMetallicTexture = nullptr;
     id normalRoughnessTexture = nullptr;
+    id depthAsColorTexture = nullptr;
 
     HybridPipeline* pipeline = nullptr;
     id gbufferDepthStencilState = nullptr;

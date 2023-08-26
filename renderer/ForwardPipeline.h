@@ -9,7 +9,7 @@ public:
     ForwardPipeline(id aDevice);
 
 private:
-    void createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) override;
+    void createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) override;
 };
 
 } //namespace anari_mtl

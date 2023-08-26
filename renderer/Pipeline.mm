@@ -52,14 +52,14 @@ Pipeline::~Pipeline() {
     }
 }
 
-void Pipeline::bind(id encoder, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) {
+void Pipeline::bind(id encoder, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) {
     PIPELINE_HASH_T hash = config.getHash();
     if (!(isBound && hash == boundHash)) {
         auto& renderPipelineState = renderPipelineStates[hash];
         if (!renderPipelineState) {
             renderPipelineState = new PipelineState{};
 
-            createPipeline(renderPipelineState, config, colorAttachment, depthAttachment, albedoMetallicTexture, normalRoughnessTexture);
+            createPipeline(renderPipelineState, config, colorAttachment, depthAttachment, albedoMetallicAttachment, normalRoughnessAttachment, depthAsColorAttachment);
         }
 
         [encoder setRenderPipelineState:renderPipelineState->pipelineState];

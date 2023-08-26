@@ -38,6 +38,10 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
         textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Snorm;
         normalRoughnessTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
     }
+    if (!depthAsColorTexture) {
+        textureDescriptor.pixelFormat = MTLPixelFormatR32Float;
+        depthAsColorTexture = [deviceState()->mtlDevice newTextureWithDescriptor:textureDescriptor];
+    }
 
     if (!pipeline)
         pipeline = new HybridPipeline(deviceState()->mtlDevice);
@@ -70,6 +74,9 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
     renderPassDescriptor.colorAttachments[2].texture = normalRoughnessTexture;
     renderPassDescriptor.colorAttachments[2].loadAction = MTLLoadActionDontCare;
     renderPassDescriptor.colorAttachments[2].storeAction = MTLStoreActionDontCare;
+    renderPassDescriptor.colorAttachments[3].texture = depthAsColorTexture;
+    renderPassDescriptor.colorAttachments[3].loadAction = MTLLoadActionDontCare;
+    renderPassDescriptor.colorAttachments[3].storeAction = MTLStoreActionDontCare;
     if (depthTexture) {
         renderPassDescriptor.depthAttachment.texture = depthTexture;
         renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
@@ -106,13 +113,13 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
     }
 
     for (auto& renderable : renderables) {
-        pipeline->bind(encoder, renderable.config, colorTexture, depthTexture, albedoMetallicTexture, normalRoughnessTexture);
+        pipeline->bind(encoder, renderable.config, colorTexture, depthTexture, albedoMetallicTexture, normalRoughnessTexture, depthAsColorTexture);
         renderable.object->render(encoder, renderable.modelMatrix);
     }
 
     pipeline->unbind();
 
-    pipeline->bindDeferred(encoder, colorTexture, albedoMetallicTexture, normalRoughnessTexture, depthTexture);
+    pipeline->bindDeferred(encoder, colorTexture, depthTexture, albedoMetallicTexture, normalRoughnessTexture, depthAsColorTexture);
     if (depthTexture)
         [encoder setDepthStencilState:deferredDepthStencilState];
 

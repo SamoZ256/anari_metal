@@ -28,7 +28,7 @@ public:
 
     virtual ~Pipeline();
 
-    void bind(id encoder, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture);
+    void bind(id encoder, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment);
 
     void unbind() {
         isBound = false;
@@ -45,7 +45,7 @@ protected:
 
     id createFunction(const std::string& name, const std::vector<ConstantValue>& constantValue);
 
-    virtual void createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) = 0;
+    virtual void createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) = 0;
 };
 
 } //namespace anari_mtl

@@ -142,7 +142,7 @@ namespace anari_mtl {
 
 ForwardPipeline::ForwardPipeline(id aDevice) : Pipeline(aDevice, shaderSource) {}
 
-void ForwardPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicTexture, id normalRoughnessTexture) {
+void ForwardPipeline::createPipeline(PipelineState* renderPipelineState, const PipelineConfig& config, id colorAttachment, id depthAttachment, id albedoMetallicAttachment, id normalRoughnessAttachment, id depthAsColorAttachment) {
     std::vector<ConstantValue> constantValues = {
         {(void*)&config.hasColors, 0},
         {(void*)&config.hasTexCoords, 1}
