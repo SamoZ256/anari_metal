@@ -26,6 +26,7 @@ struct PipelineConfig {
 };
 
 struct Object;
+class Geometry;
 
 struct Renderable {
     Object* object;
@@ -65,6 +66,10 @@ struct Object : public helium::BaseObject {
         reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) does not have bounds", this, type());
 
         return {};
+    }
+
+    virtual void buildAccelerationStructureAndAddGeometryToList(void* list) {
+        reportMessage(ANARI_SEVERITY_WARNING, "this object (%p, %u) does not have geometry", this, type());
     }
 };
 

@@ -16,14 +16,13 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
-    void buildAccelerationStructure(void* instanceDescriptor);
+    void buildAccelerationStructureAndAddGeometryToList(void* list) override;
+
+    void createInstanceAccelerationStructureDescriptor(void* instanceDescriptor);
 
 private:
     Group* group;
     float4x4 modelMatrix;
-
-    id mtlAccelerationStructure;
-    bool builtAccelerationStructure = false;
 };
 
 } //namespace anari_mtl

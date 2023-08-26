@@ -8,7 +8,7 @@ public:
 
     void commit() override;
 
-    void* getGeometryDescriptor() override;
+    id buildAccelerationStructureAndAddToList(void* list) override;
 };
 
 } //namespace anari_mtl

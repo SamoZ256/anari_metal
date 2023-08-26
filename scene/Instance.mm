@@ -26,32 +26,14 @@ Bounds Instance::getBounds(const float4x4& parentModelMatrix) {
     return group->getBounds(mul(parentModelMatrix, modelMatrix));
 }
 
-void Instance::buildAccelerationStructure(void* instanceDescriptor) {
-    if (!builtAccelerationStructure) {
-        NSMutableArray* accelerationStructures = (NSMutableArray*)group->buildAccelerationStructures();
+void Instance::buildAccelerationStructureAndAddGeometryToList(void* list) {
+    group->buildAccelerationStructureAndAddGeometryToList(list);
+}
 
-        /*
-        NSUInteger geometryIndex = 255;//[scene.geometries indexOfObject:instance.geometry]
-        for (uint32_t i = 0; i < scene.geometries.size(); i++) {
-            if (scene.geometries[i] == instance->geometry) {
-                geometryIndex = i;
-                break;
-            }
-        }
-
-        // Map the instance to its acceleration structure.
-        instanceDescriptors[instanceIndex].accelerationStructureIndex = (uint32_t)geometryIndex;
-        instanceDescriptors[instanceIndex].options = MTLAccelerationStructureInstanceOptionOpaque;
-        instanceDescriptors[instanceIndex].intersectionFunctionTableOffset = 0;
-        instanceDescriptors[instanceIndex].mask = 1;
-
-        for (int column = 0; column < 4; column++)
-            for (int row = 0; row < 3; row++)
-                instanceDescriptors[instanceIndex].transformationMatrix.columns[column][row] = instance->transform[column][row];
-        */
-
-        builtAccelerationStructure = true;
-    }
+void Instance::createInstanceAccelerationStructureDescriptor(void* instanceDescriptor) {
+    //TODO: implement this
+    //for (every geometry)
+    //  helper::createInstanceAccelerationStructureDescriptor(*((MTLAccelerationStructureInstanceDescriptor*)instanceDescriptor), geometry->getUUID(), modelMatrix);
 }
 
 } //namespace anari_mtl

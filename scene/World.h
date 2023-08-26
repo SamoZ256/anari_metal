@@ -17,6 +17,8 @@ public:
 
     void commit() override;
 
+    void buildAccelerationStructure();
+
     Array* getInstances() {
         return instances;
     }
@@ -35,6 +37,9 @@ private:
     Array* lights = nullptr;
     
     Bounds bounds;
+
+    id instanceAccelerationStructure;
+    bool builtAccelerationStructure = false;
 };
 
 } //namespace anari_mtl

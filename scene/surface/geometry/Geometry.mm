@@ -82,4 +82,22 @@ Bounds Geometry::getBounds(const float4x4& parentModelMatrix) {
     return bounds;
 }
 
+/*
+void Geometry::addToList(void* list, id accelerationStructure) {
+    uuid = -1;
+
+    for (Geometry* geometry in (NSMutableArray*)list) {
+        if (geometry == this) {
+            uuid = geometry->getUUID();
+            break;
+        }
+    }
+
+    if (uuid == -1) {
+        uuid = list.size();
+        [(NSMutableArray*)list addObject:accelerationStructure];
+    }
+}
+*/
+
 } //namespace anari_mtl

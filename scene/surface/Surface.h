@@ -19,14 +19,13 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
-    id buildAccelerationStructure();
+    void buildAccelerationStructureAndAddGeometryToList(void* instanceDescriptor) override;
+
+    void createInstanceAccelerationStructureDescriptor(void* list);
 
 private:
     Geometry* geometry;
     Material* material;
-
-    id mtlAccelerationStructure;
-    bool builtAccelerationStructure = false;
 };
 
 } //namespace anari_mtl

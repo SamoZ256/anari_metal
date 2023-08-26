@@ -1,5 +1,7 @@
 #include "TriangleGeometry.h"
 
+#include "metal_helper/MetalHelper.h"
+
 namespace anari_mtl {
 
 template<typename T>
@@ -101,15 +103,28 @@ void TriangleGeometry::commit() {
     initMTLBuffers();
 }
 
-void* TriangleGeometry::getGeometryDescriptor() {
-    MTLAccelerationStructureTriangleGeometryDescriptor* geometryDescriptor = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
-    geometryDescriptor.indexBuffer = INDEX_BUFFER;
-    geometryDescriptor.indexType = MTLIndexTypeUInt32; //TODO: use UInt16 in case it's required
-    geometryDescriptor.vertexBuffer = POSITION_BUFFER;
-    geometryDescriptor.vertexStride = sizeof(float3);
-    geometryDescriptor.triangleCount = INDEX_ATTR->getElementCount() / 3;
+id TriangleGeometry::buildAccelerationStructureAndAddToList(void* list) {
+    //addToList(list);
+    if (!builtAccelerationStructure) {
+        MTLAccelerationStructureTriangleGeometryDescriptor* geometryDescriptor = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
+        geometryDescriptor.indexBuffer = INDEX_BUFFER;
+        geometryDescriptor.indexType = MTLIndexTypeUInt32; //TODO: use UInt16 in case it's required
+        geometryDescriptor.vertexBuffer = POSITION_BUFFER;
+        geometryDescriptor.vertexStride = sizeof(float3);
+        geometryDescriptor.triangleCount = (INDEX_ATTR ? INDEX_ATTR : POSITION_ATTR)->getElementCount() / 3;
+        
+        MTLPrimitiveAccelerationStructureDescriptor *accelDescriptor = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
+        accelDescriptor.geometryDescriptors = @[geometryDescriptor];
 
-    return geometryDescriptor;
+        id<MTLAccelerationStructure> accelerationStructure = helper::buildAccelerationStructure(deviceState()->mtlDevice, deviceState()->mtlCommandQueue, accelDescriptor);
+
+        uuid = [(NSMutableArray*)list count];
+        [(NSMutableArray*)list addObject:accelerationStructure];
+
+        builtAccelerationStructure = true;
+    }
+
+    return mtlAccelerationStructure;
 }
 
 } //namespace anari_mtl

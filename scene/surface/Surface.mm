@@ -1,50 +1,8 @@
 #include "Surface.h"
 
+#include "metal_helper/MetalHelper.h"
+
 namespace anari_mtl {
-
-id <MTLAccelerationStructure> createMTLAccelerationStructure(id<MTLDevice> device, id<MTLCommandQueue> commandQueue, MTLAccelerationStructureDescriptor *descriptor) {
-    MTLAccelerationStructureSizes accelSizes = [device accelerationStructureSizesWithDescriptor:descriptor];
-
-    id <MTLAccelerationStructure> accelerationStructure = [device newAccelerationStructureWithSize:accelSizes.accelerationStructureSize];
-
-    id <MTLBuffer> scratchBuffer = [device newBufferWithLength:accelSizes.buildScratchBufferSize options:MTLResourceStorageModePrivate];
-
-    id <MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-
-    id <MTLAccelerationStructureCommandEncoder> commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
-
-    id <MTLBuffer> compactedSizeBuffer = [device newBufferWithLength:sizeof(uint32_t) options:MTLResourceStorageModeShared];
-
-    [commandEncoder buildAccelerationStructure:accelerationStructure
-                                    descriptor:descriptor
-                                 scratchBuffer:scratchBuffer
-                           scratchBufferOffset:0];
-
-    [commandEncoder writeCompactedAccelerationStructureSize:accelerationStructure
-                                                   toBuffer:compactedSizeBuffer
-                                                     offset:0];
-
-    [commandEncoder endEncoding];
-    [commandBuffer commit];
-
-    [commandBuffer waitUntilCompleted];
-
-    uint32_t compactedSize = *(uint32_t*)compactedSizeBuffer.contents;
-
-    id <MTLAccelerationStructure> compactedAccelerationStructure = [device newAccelerationStructureWithSize:compactedSize];
-
-    commandBuffer = [commandQueue commandBuffer];
-
-    commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
-
-    [commandEncoder copyAndCompactAccelerationStructure:accelerationStructure
-                                toAccelerationStructure:compactedAccelerationStructure];
-
-    [commandEncoder endEncoding];
-    [commandBuffer commit];
-
-    return compactedAccelerationStructure;
-}
 
 Surface::Surface(AnariMetalGlobalState* s) : Object(ANARI_SURFACE, s) {
     s->objectCounts.surfaces++;
@@ -79,20 +37,12 @@ Bounds Surface::getBounds(const float4x4& parentModelMatrix) {
     return geometry->getBounds(parentModelMatrix);
 }
 
-id Surface::buildAccelerationStructure() {
-    if (!builtAccelerationStructure) {
-        //TODO: make this a geometry descriptor, not triangle geometry descriptor
-        MTLAccelerationStructureTriangleGeometryDescriptor* geometryDescriptor = (MTLAccelerationStructureTriangleGeometryDescriptor*)geometry->getGeometryDescriptor();
-        
-        MTLPrimitiveAccelerationStructureDescriptor *accelDescriptor = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
-        accelDescriptor.geometryDescriptors = @[geometryDescriptor];
+void Surface::buildAccelerationStructureAndAddGeometryToList(void* list) {
+    geometry->buildAccelerationStructureAndAddToList(list);
+}
 
-        id<MTLAccelerationStructure> accelerationStructure = createMTLAccelerationStructure(deviceState()->mtlDevice, deviceState()->mtlCommandQueue, accelDescriptor);
-
-        builtAccelerationStructure = true;
-    }
-
-    return mtlAccelerationStructure;
+void Surface::createInstanceAccelerationStructureDescriptor(void* instanceDescriptor) {
+    helper::createInstanceAccelerationStructureDescriptor(*((MTLAccelerationStructureInstanceDescriptor*)instanceDescriptor), geometry->getUUID(), identity);
 }
 
 } //namespace anari_mtl

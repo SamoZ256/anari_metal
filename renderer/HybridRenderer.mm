@@ -77,6 +77,8 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
         renderPassDescriptor.depthAttachment.clearDepth = 1.0f;
     }
 
+    world->buildAccelerationStructure();
+
     id<MTLRenderCommandEncoder> encoder = [commandBuffer renderCommandEncoderWithDescriptor:(MTLRenderPassDescriptor*)renderPassDescriptor];
 
     if (depthTexture)
@@ -100,8 +102,6 @@ void HybridRenderer::renderFrame(World* world, Camera* camera, id colorTexture, 
         for (uint32_t i = 0; i < surfaces->getElementCount(); i++) {
             Object* surface = surfaces->getObjectAtIndex(i);
             surface->getRenderables(renderables, identity);
-            //HACK: just to test
-            ((Surface*)surface)->buildAccelerationStructure();
         }
     }
 

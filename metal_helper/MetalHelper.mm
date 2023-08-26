@@ -491,6 +491,61 @@ PixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool dept
     return pixelFormat;
 }
 
+void createInstanceAccelerationStructureDescriptor(MTLAccelerationStructureInstanceDescriptor& instanceDescriptor, long geometryIndex, const float4x4& modelMatrix) {
+    instanceDescriptor.accelerationStructureIndex = (uint32_t)geometryIndex;
+    instanceDescriptor.options = MTLAccelerationStructureInstanceOptionOpaque;
+    instanceDescriptor.intersectionFunctionTableOffset = 0;
+    instanceDescriptor.mask = 1;
+
+    for (int column = 0; column < 4; column++)
+        for (int row = 0; row < 3; row++)
+            instanceDescriptor.transformationMatrix.columns[column][row] = modelMatrix[column][row];
+}
+
+id<MTLAccelerationStructure> buildAccelerationStructure(id<MTLDevice> device, id<MTLCommandQueue> commandQueue, MTLAccelerationStructureDescriptor *descriptor) {
+    MTLAccelerationStructureSizes accelSizes = [device accelerationStructureSizesWithDescriptor:descriptor];
+
+    id <MTLAccelerationStructure> accelerationStructure = [device newAccelerationStructureWithSize:accelSizes.accelerationStructureSize];
+
+    id <MTLBuffer> scratchBuffer = [device newBufferWithLength:accelSizes.buildScratchBufferSize options:MTLResourceStorageModePrivate];
+
+    id <MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+
+    id <MTLAccelerationStructureCommandEncoder> commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
+
+    id <MTLBuffer> compactedSizeBuffer = [device newBufferWithLength:sizeof(uint32_t) options:MTLResourceStorageModeShared];
+
+    [commandEncoder buildAccelerationStructure:accelerationStructure
+                                    descriptor:descriptor
+                                 scratchBuffer:scratchBuffer
+                           scratchBufferOffset:0];
+
+    [commandEncoder writeCompactedAccelerationStructureSize:accelerationStructure
+                                                   toBuffer:compactedSizeBuffer
+                                                     offset:0];
+
+    [commandEncoder endEncoding];
+    [commandBuffer commit];
+
+    [commandBuffer waitUntilCompleted];
+
+    uint32_t compactedSize = *(uint32_t*)compactedSizeBuffer.contents;
+
+    id <MTLAccelerationStructure> compactedAccelerationStructure = [device newAccelerationStructureWithSize:compactedSize];
+
+    commandBuffer = [commandQueue commandBuffer];
+
+    commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
+
+    [commandEncoder copyAndCompactAccelerationStructure:accelerationStructure
+                                toAccelerationStructure:compactedAccelerationStructure];
+
+    [commandEncoder endEncoding];
+    [commandBuffer commit];
+
+    return compactedAccelerationStructure;
+}
+
 } //namespace helper
 
 } //namespace anari_mtl

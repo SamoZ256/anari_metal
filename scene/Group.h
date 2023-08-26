@@ -16,7 +16,7 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
-    void* buildAccelerationStructures();
+    void buildAccelerationStructureAndAddGeometryToList(void* list) override;
 
 private:
     Array* handles = nullptr;

@@ -24,6 +24,10 @@ struct PixelFormat {
 
 PixelFormat getMTLPixelFormatFromANARIDataType(ANARIDataType dataType, bool depthFormat = false, bool allowSizeChange = false, bool allowChannelCountChange = false);
 
+void createInstanceAccelerationStructureDescriptor(MTLAccelerationStructureInstanceDescriptor& instanceDescriptor, long geometryIndex, const float4x4& modelMatrix);
+
+id<MTLAccelerationStructure> buildAccelerationStructure(id<MTLDevice> device, id<MTLCommandQueue> commandQueue, MTLAccelerationStructureDescriptor *descriptor);
+
 } //namespace helper
 
 } //namespace anari_mtl

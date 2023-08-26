@@ -61,7 +61,7 @@ add_library(anari_library_anari_metal SHARED
   camera/Camera.cpp
   camera/PerspectiveCamera.cpp
   array/Array.cpp
-  scene/World.cpp
+  scene/World.mm
   scene/Instance.mm
   scene/Group.mm
   scene/surface/Surface.mm

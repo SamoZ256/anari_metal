@@ -43,7 +43,11 @@ public:
 
     Bounds getBounds(const float4x4& parentModelMatrix) override;
 
-    virtual void* getGeometryDescriptor() = 0;
+    virtual id buildAccelerationStructureAndAddToList(void* list) = 0;
+
+    long getUUID() {
+        return uuid;
+    }
 
     //Attributes
     bool hasColors() {
@@ -55,11 +59,18 @@ public:
     }
 
 protected:
+    unsigned long uuid;
+
     Array* attributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
     Array* oldAttributes[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
     id mtlBuffers[GEOMETRY_ATTRIBUTES_ARRAY_COUNT] = {nullptr};
 
+    id mtlAccelerationStructure;
+    bool builtAccelerationStructure = false;
+
     void initMTLBuffers();
+
+    //void addToList(void* list, id accelerationStructure);
 };
 
 } //namespace anari_mtl
